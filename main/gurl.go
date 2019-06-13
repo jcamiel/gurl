@@ -18,7 +18,8 @@ func main() {
 	flag.Parse()
 
 	for _, file := range os.Args[1:] {
-		if _, err := gurl.NewParserFromFile(file); err != nil {
+		_, err := gurl.NewParserFromFile(file)
+		if err != nil {
 			log.Panic(err)
 		}
 	}

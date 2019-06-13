@@ -12,7 +12,25 @@ func TestReadRune(t *testing.T) {
 
 	r, err := parser.readRune()
 	assert.Nil(t, err)
-	assert.Equal(t, r, 'S', "First rune should be equal")
+	assert.Equal(t, 'S', r, "First rune should be equal")
+	assert.Equal(t, 1, parser.Current, "Parser index should be incremented")
+	assert.Equal(t, 1, parser.Line, "Parser line should be equal")
+}
+
+func TestLineCount(t *testing.T) {
+	text := `Some multiline string:
+Line 2
+Line 3
+Line 4`
+	parser := NewParserFromString(text, "")
+
+	for {
+		_, err := parser.readRune()
+		if err != nil {
+			break
+		}
+	}
+	assert.Equal(t, 4, parser.Line, "Parser line should be equal")
 }
 
 func TestEndOfFile(t *testing.T) {
@@ -24,7 +42,7 @@ func TestEndOfFile(t *testing.T) {
 	}
 
 	_, err := parser.readRune()
-	assert.Equal(t, err, io.EOF, "Error should be end of file")
+	assert.Equal(t, io.EOF, err, "Error should be end of file")
 }
 
 func TestEmptyString(t *testing.T) {
@@ -49,5 +67,5 @@ func TestParseWhiteSpace(t *testing.T) {
 
 	token, err := parser.parseWhiteSpace(false)
 	assert.Nil(t, err)
-	assert.Equal(t, token, &WhitespaceToken{len(prefix), spaces}, "WhitespaceToken should be parsed")
+	assert.Equal(t, token, &Whitespace{Position{5,1}, spaces}, "Whitespace should be parsed")
 }
