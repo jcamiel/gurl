@@ -1,4 +1,4 @@
-package gurl
+package parser
 
 import (
 	"io"
@@ -11,10 +11,11 @@ const (
 	newLine = '\u000a'
 )
 
+
 type Parser struct {
 	Filename string // filename, if any
 	Buffer   []rune // file content
-	Current  int    // position of the buffer, current rune
+	Current  int    // start of the buffer, current rune
 	Line     int    // current line
 }
 
@@ -52,23 +53,32 @@ func (p *Parser) nextRune() (rune, error) {
 
 func (p *Parser) parseWhiteSpace(skipNewLine bool) (Node, error) {
 
-	startCur := p.Current
+	start := p.Current
 	startLine := p.Line
+	end := start
+	endLine := startLine
 
 	for {
 		r, err := p.nextRune()
-		if err != nil || !isWhiteSpace(r) || (isNewLine(r) && !skipNewLine) {
+		if err != nil {
 			break
 		}
-		_, _ = p.readRune()
+		if isWhiteSpace(r) || (isNewLine(r) && skipNewLine) {
+			_, _ = p.readRune()
+			end = p.Current
+			endLine = p.Line
+		} else {
+			break
+		}
 	}
 
-	if startCur == p.Current {
+	if start == end {
 		return nil, nil
 	}
-	whitespace := string(p.Buffer[startCur:p.Current])
-	position := Position{startCur, startLine}
-	return &Whitespace{position, whitespace}, nil
+	startPos := Position{start, startLine}
+	endPos := Position{end, endLine}
+	whitespace := string(p.Buffer[start : end])
+	return &Whitespace{startPos, endPos, whitespace}, nil
 }
 
 func isWhiteSpace(r rune) bool {

@@ -1,4 +1,4 @@
-package gurl
+package parser
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -54,18 +54,31 @@ func TestEmptyString(t *testing.T) {
 
 func TestParseWhiteSpace(t *testing.T) {
 
-	prefix := "start"
-	suffix := "end"
-	spaces := "\u0020\u0020\u0020"
-	text := prefix + spaces + suffix
+	var parser *Parser
+	var node Node
+	var err error
 
-	parser := NewParserFromString(text, "")
+	var tests = []struct{
+		text string
+		expectedText string
+		skipNewLine bool
+		start Position
+		end Position
+	}{
+		{"\u0020\u0020\n\n\u0020ABCD", "\u0020\u0020", false, Position{0, 1}, Position{2, 1}},
+		{"\u0020\u0020\n\n\u0020ABCD", "\u0020\u0020\n\n\u0020", true, Position{0, 1}, Position{5, 3}},
+		{"\n", "\n", true, Position{0, 1}, Position{1, 2}},
 
-	for i:=0; i < len(prefix); i++ {
-		_, _ = parser.readRune()
 	}
 
-	token, err := parser.parseWhiteSpace(false)
-	assert.Nil(t, err)
-	assert.Equal(t, token, &Whitespace{Position{5,1}, spaces}, "Whitespace should be parsed")
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			parser = NewParserFromString(test.text, "")
+			node, err = parser.parseWhiteSpace(test.skipNewLine)
+			assert.Nil(t, err)
+			assert.Equal(t, &Whitespace{test.start, test.end, test.expectedText}, node, "Whitespace should be parsed")
+		})
+	}
+
+
 }

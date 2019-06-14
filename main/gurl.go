@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gurl"
+	"gurl/parser"
 	"log"
 	"os"
 )
@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 
 	for _, file := range os.Args[1:] {
-		_, err := gurl.NewParserFromFile(file)
+		_, err := parser.NewParserFromFile(file)
 		if err != nil {
 			log.Panic(err)
 		}
