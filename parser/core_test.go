@@ -49,7 +49,7 @@ func TestEmptyString(t *testing.T) {
 	text := ""
 	parser := NewParserFromString(text, "")
 	_, err := parser.readRune()
-	assert.Equal(t, err, io.EOF, "Error should be end of file")
+	assert.Equal(t, io.EOF, err, "Error should be end of file")
 }
 
 func TestParseWhiteSpace(t *testing.T) {
@@ -58,17 +58,16 @@ func TestParseWhiteSpace(t *testing.T) {
 	var node Node
 	var err error
 
-	var tests = []struct{
-		text string
+	var tests = []struct {
+		text         string
 		expectedText string
-		skipNewLine bool
-		start Position
-		end Position
+		skipNewLine  bool
+		start        Position
+		end          Position
 	}{
 		{"\u0020\u0020\n\n\u0020ABCD", "\u0020\u0020", false, Position{0, 1}, Position{2, 1}},
 		{"\u0020\u0020\n\n\u0020ABCD", "\u0020\u0020\n\n\u0020", true, Position{0, 1}, Position{5, 3}},
 		{"\n", "\n", true, Position{0, 1}, Position{1, 2}},
-
 	}
 
 	for _, test := range tests {
@@ -79,6 +78,4 @@ func TestParseWhiteSpace(t *testing.T) {
 			assert.Equal(t, &Whitespace{test.start, test.end, test.expectedText}, node, "Whitespace should be parsed")
 		})
 	}
-
-
 }

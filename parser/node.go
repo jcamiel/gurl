@@ -5,34 +5,51 @@ type Position struct {
 	Line   int // line number, starting at 1
 }
 
-type Node interface {
-	Start() Position
-	End() Position
-}
+type (
 
-type Eof struct {
-	start Position
-	end   Position
-}
+	Node interface {
+		Begin() Position
+		End() Position
+	}
 
-func (t *Eof) Start() Position {
-	return t.start
+	Eof struct {
+		begin Position
+		end   Position
+	}
+
+	Whitespace struct {
+		begin Position
+		end   Position
+		Text  string
+	}
+
+	Method struct {
+		begin  Position
+		end    Position
+		Method string
+	}
+)
+
+func (t *Eof) Begin() Position {
+	return t.begin
 }
 
 func (t *Eof) End() Position {
 	return t.end
 }
 
-type Whitespace struct {
-	start Position
-	end Position
-	Text  string
-}
-
-func (t *Whitespace) Start() Position {
-	return t.start
+func (t *Whitespace) Begin() Position {
+	return t.begin
 }
 
 func (t *Whitespace) End() Position {
+	return t.end
+}
+
+func (t *Method) Begin() Position {
+	return t.begin
+}
+
+func (t *Method) End() Position {
 	return t.end
 }
