@@ -1,12 +1,12 @@
 package parser
 
 type Position struct {
-	Offset int // offset, starting at 0
-	Line   int // line number, starting at 1
+	Offset int // offset in rune, starting at 0
+	Line   int // line number in rune, starting at 1
+	Column int // column number in rune, starting at 1
 }
 
 type (
-
 	Node interface {
 		Begin() Position
 		End() Position
@@ -18,6 +18,12 @@ type (
 	}
 
 	Whitespace struct {
+		begin Position
+		end   Position
+		Text  string
+	}
+
+	UnquotedString struct {
 		begin Position
 		end   Position
 		Text  string
@@ -43,6 +49,14 @@ func (t *Whitespace) Begin() Position {
 }
 
 func (t *Whitespace) End() Position {
+	return t.end
+}
+
+func (t *UnquotedString) Begin() Position {
+	return t.begin
+}
+
+func (t *UnquotedString) End() Position {
 	return t.end
 }
 

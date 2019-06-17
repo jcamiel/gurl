@@ -12,8 +12,8 @@ func TestParseMethodSucceed(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, &Method{
-		Position{0, 1},
-		Position{4, 1},
+		Position{0, 1, 1},
+		Position{4, 1, 5},
 		"POST",
 	}, method, "POST should be parsed")
 }

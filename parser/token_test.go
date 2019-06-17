@@ -65,9 +65,27 @@ func TestParseWhiteSpace(t *testing.T) {
 		start        Position
 		end          Position
 	}{
-		{"\u0020\u0020\n\n\u0020ABCD", "\u0020\u0020", false, Position{0, 1}, Position{2, 1}},
-		{"\u0020\u0020\n\n\u0020ABCD", "\u0020\u0020\n\n\u0020", true, Position{0, 1}, Position{5, 3}},
-		{"\n", "\n", true, Position{0, 1}, Position{1, 2}},
+		{
+			"\u0020\u0020\n\n\u0020ABCD",
+			"\u0020\u0020",
+			false,
+			Position{0, 1, 1},
+			Position{2, 1, 3},
+		},
+		{
+			"\u0020\u0020\n\n\u0020ABCD",
+			"\u0020\u0020\n\n\u0020",
+			true,
+			Position{0, 1, 1},
+			Position{5, 3, 2},
+		},
+		{
+			"\n",
+			"\n",
+			true,
+			Position{0, 1, 1},
+			Position{1, 2, 1},
+		},
 	}
 
 	for _, test := range tests {
@@ -78,4 +96,25 @@ func TestParseWhiteSpace(t *testing.T) {
 			assert.Equal(t, &Whitespace{test.start, test.end, test.expectedText}, node, "Whitespace should be parsed")
 		})
 	}
+}
+
+func TestUnquotedString(t *testing.T) {
+	text := "abcdef 12345678"
+	parser := NewParserFromString(text, "")
+	node, err := parser.parseUnquotedString()
+	assert.Nil(t, err)
+	assert.Equal(t, &UnquotedString{
+		Position{0,1,1},
+		Position{6,1,7},
+		"abcdef",
+	}, node, "UnquotedString should parsed")
+}
+
+func TestUnquotedStringFailed(t *testing.T) {
+	text := ""
+	parser := NewParserFromString(text, "")
+	node, err := parser.parseUnquotedString()
+	assert.Nil(t, node)
+	assert.NotNil(t, err)
+	assert.Equal(t, io.EOF, err,"End of file error should be returned")
 }
