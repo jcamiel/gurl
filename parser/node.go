@@ -3,7 +3,6 @@ package parser
 type Position struct {
 	Offset int // offset in rune, starting at 0
 	Line   int // line number in rune, starting at 1
-	Column int // column number in rune, starting at 1
 }
 
 type (
@@ -17,13 +16,13 @@ type (
 		end   Position
 	}
 
-	Whitespace struct {
+	Spaces struct {
 		begin Position
 		end   Position
 		Text  string
 	}
 
-	UnquotedString struct {
+	Whitespaces struct {
 		begin Position
 		end   Position
 		Text  string
@@ -44,19 +43,19 @@ func (t *Eof) End() Position {
 	return t.end
 }
 
-func (t *Whitespace) Begin() Position {
+func (t *Spaces) Begin() Position {
 	return t.begin
 }
 
-func (t *Whitespace) End() Position {
+func (t *Spaces) End() Position {
 	return t.end
 }
 
-func (t *UnquotedString) Begin() Position {
+func (t *Whitespaces) Begin() Position {
 	return t.begin
 }
 
-func (t *UnquotedString) End() Position {
+func (t *Whitespaces) End() Position {
 	return t.end
 }
 
