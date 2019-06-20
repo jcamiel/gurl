@@ -50,6 +50,25 @@ func (p *Parser) readRunes(count int) ([]rune, error) {
 	return p.Buffer[begin:end], nil
 }
 
+func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
+	begin := p.Current
+	end := begin
+
+	for {
+		r, err := p.nextRune()
+		if err != nil {
+			break
+		}
+		if f(r) {
+			_, _ = p.readRune()
+			end = p.Current
+		} else {
+			break
+		}
+	}
+	return p.Buffer[begin:end], nil
+}
+
 func (p *Parser) nextRune() (rune, error) {
 	if p.Current >= len(p.Buffer) {
 		return 0, io.EOF
@@ -72,6 +91,20 @@ func (p *Parser) isNext(text string) bool {
 		return false
 	}
 	return Equal(runes, next)
+}
+
+func (p *Parser) tryParse(parse func() (Node, error)) (Node, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	node, err := parse()
+
+	if err != nil {
+		p.Current, p.Line = begin, beginLine
+		return nil, err
+	}
+
+	return node, nil
 }
 
 func newSyntaxError(p *Parser, text string) error {

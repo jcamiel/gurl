@@ -51,4 +51,3 @@ func TestReadEmptyString(t *testing.T) {
 	_, err := parser.readRune()
 	assert.Equal(t, io.EOF, err, "Error should be end of file")
 }
-

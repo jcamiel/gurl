@@ -3,53 +3,37 @@ package parser
 func (p *Parser) parseWhitespaces() (Node, error) {
 
 	begin, beginLine := p.Current, p.Line
-	end, endLine := begin, beginLine
 
-	for {
-		r, err := p.nextRune()
-		if err != nil {
-			break
-		}
-		if isWhiteSpace(r) || isNewLine(r) {
-			_, _ = p.readRune()
-			end, endLine = p.Current, p.Line
-		} else {
-			break
-		}
+	whitespaces, err := p.readRunesWhile(func(r rune) bool {
+		return r == space || r == tab || r == newLine
+	})
+
+	if err != nil || len(whitespaces) == 0 {
+		return nil, newSyntaxError(p, "space, tab or newline expected")
 	}
 
-	if begin == end {
-		return nil, nil
-	}
+	end, endLine := p.Current, p.Line
+
 	beginPos := Position{begin, beginLine}
 	endPos := Position{end, endLine}
-	whitespaces := string(p.Buffer[begin:end])
-	return &Whitespaces{beginPos, endPos, whitespaces}, nil
+	return &Whitespaces{beginPos, endPos, string(whitespaces)}, nil
 }
 
 func (p *Parser) parseSpaces() (Node, error) {
 
 	begin, beginLine := p.Current, p.Line
-	end, endLine := begin, beginLine
 
-	for {
-		r, err := p.nextRune()
-		if err != nil {
-			break
-		}
-		if isWhiteSpace(r) {
-			_, _ = p.readRune()
-			end, endLine = p.Current, p.Line
-		} else {
-			break
-		}
+	spaces, err := p.readRunesWhile(func(r rune) bool {
+		return r == space || r == tab
+	})
+
+	if err != nil || len(spaces) == 0 {
+		return nil, newSyntaxError(p, "space or tab expected")
 	}
 
-	if begin == end {
-		return nil, nil
-	}
+	end, endLine := p.Current, p.Line
+
 	beginPos := Position{begin, beginLine}
 	endPos := Position{end, endLine}
-	spaces := string(p.Buffer[begin:end])
-	return &Spaces{beginPos, endPos, spaces}, nil
+	return &Spaces{beginPos, endPos, string(spaces)}, nil
 }
