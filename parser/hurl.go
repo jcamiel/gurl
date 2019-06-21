@@ -2,6 +2,38 @@ package parser
 
 import "fmt"
 
+func (p *Parser) parseRequest() (*Request, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	whitespaces, _ := p.tryParseWhitespaces()
+
+	method, err := p.parseMethod()
+	if err != nil {
+		return nil, err
+	}
+
+	spaces, err := p.parseSpaces()
+	if err != nil {
+		return nil, err
+	}
+
+	url, err := p.parseUrl()
+	if err != nil {
+		return nil, err
+	}
+
+	end, endLine := p.Current, p.Line
+
+	return &Request{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		whitespaces,
+		method,
+		spaces,
+		url}, nil
+}
+
 func (p *Parser) parseMethod() (*Method, error) {
 	methods := []string{
 		"GET",
@@ -26,28 +58,30 @@ func (p *Parser) parseMethod() (*Method, error) {
 	return nil, newSyntaxError(p, fmt.Sprintf("method %v is expected", methods))
 }
 
-func (p *Parser) parseRequest() (*Request, error) {
+func (p *Parser) parseUrl() (*Url, error) {
 
 	begin, beginLine := p.Current, p.Line
 
-	whitespaces, _ := p.tryParseWhitespaces()
+	genDelims := []rune{':', '/', '?', '#', '[', ']', '@'}
+	subDelims := []rune{'!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='}
 
-	method, err := p.parseMethod()
-	if err != nil {
-		return nil, err
-	}
+	url, err := p.readRunesWhile(func(r rune) bool {
+		isAlpha := (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
+		isDigit := r >= '0' && r <= '9'
+		isUnreserved := isAlpha || isDigit || r == '-' || r == '.' || r == '_' || r == '~'
+		isReserved := RuneInSlice(r, genDelims) || RuneInSlice(r, subDelims)
+		isHurlSpecific := r == '{' || r == '}'
+		return isReserved || isUnreserved || isHurlSpecific
+	})
 
-	spaces, err := p.parseSpaces()
-	if err != nil {
-		return nil, err
+	if err != nil || len(url) == 0 {
+		return nil, newSyntaxError(p, "url expected")
 	}
 
 	end, endLine := p.Current, p.Line
 
-	return &Request{
+	return &Url{
 		Position{begin, beginLine},
 		Position{end, endLine},
-		whitespaces,
-		method,
-		spaces}, nil
+		string(url)}, nil
 }

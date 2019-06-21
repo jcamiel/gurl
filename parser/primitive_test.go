@@ -42,7 +42,7 @@ func TestParseOptionalWhitespaces(t *testing.T) {
 
 	node, err := p.tryParseWhitespaces()
 	assert.Nil(t, err)
-	assert.Equal(t, &Whitespaces{Position{0, 1}, Position{2, 1}, "\u0020\u0020\n"}, node, "Whitespaces should be parsed")
+	assert.Equal(t, &Whitespaces{Position{0, 1}, Position{3, 2}, "\u0020\u0020\n"}, node, "Whitespaces should be parsed")
 	assert.Equal(t, 3, p.Current, "Offset should be equal")
 	assert.Equal(t, 2, p.Line, "Line should be equal")
 

@@ -8,7 +8,6 @@ const (
 	hash    = '\u0023'
 )
 
-
 func Equal(a, b []rune) bool {
 	if len(a) != len(b) {
 		return false
@@ -19,4 +18,13 @@ func Equal(a, b []rune) bool {
 		}
 	}
 	return true
+}
+
+func RuneInSlice(a rune, list []rune) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }

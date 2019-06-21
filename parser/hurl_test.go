@@ -34,7 +34,6 @@ func TestParseRequest(t *testing.T) {
 	assert.Equal(t, "POST", node.Method.Value)
 }
 
-
 func TestParseFailed(t *testing.T) {
 	text := "\n\nPOSThttp://google.com"
 	p := NewParserFromString(text, "")

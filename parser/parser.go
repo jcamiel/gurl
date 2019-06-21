@@ -93,20 +93,6 @@ func (p *Parser) isNext(text string) bool {
 	return Equal(runes, next)
 }
 
-func (p *Parser) tryParse(parse func() (Node, error)) (Node, error) {
-
-	begin, beginLine := p.Current, p.Line
-
-	node, err := parse()
-
-	if err != nil {
-		p.Current, p.Line = begin, beginLine
-		return nil, err
-	}
-
-	return node, nil
-}
-
 func newSyntaxError(p *Parser, text string) error {
 	pos := Position{p.Current, p.Line}
 	return &SyntaxError{text, pos}
