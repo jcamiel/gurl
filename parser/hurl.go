@@ -2,7 +2,7 @@ package parser
 
 import "fmt"
 
-func (p *Parser) parseMethod() (Node, error) {
+func (p *Parser) parseMethod() (*Method, error) {
 	methods := []string{
 		"GET",
 		"HEAD",
@@ -26,6 +26,28 @@ func (p *Parser) parseMethod() (Node, error) {
 	return nil, newSyntaxError(p, fmt.Sprintf("method %v is expected", methods))
 }
 
-func (p *Parser) parseUrl() (Node, error) {
-	return nil, nil
+func (p *Parser) parseRequest() (*Request, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	whitespaces, _ := p.tryParseWhitespaces()
+
+	method, err := p.parseMethod()
+	if err != nil {
+		return nil, err
+	}
+
+	spaces, err := p.parseSpaces()
+	if err != nil {
+		return nil, err
+	}
+
+	end, endLine := p.Current, p.Line
+
+	return &Request{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		whitespaces,
+		method,
+		spaces}, nil
 }

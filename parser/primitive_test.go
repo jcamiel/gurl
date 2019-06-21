@@ -40,13 +40,13 @@ func TestParseOptionalWhitespaces(t *testing.T) {
 	text := "\u0020\u0020\nABCDEF"
 	p := NewParserFromString(text, "")
 
-	node, err := p.tryParse(p.parseWhitespaces)
+	node, err := p.tryParseWhitespaces()
 	assert.Nil(t, err)
 	assert.Equal(t, &Whitespaces{Position{0, 1}, Position{2, 1}, "\u0020\u0020\n"}, node, "Whitespaces should be parsed")
 	assert.Equal(t, 3, p.Current, "Offset should be equal")
 	assert.Equal(t, 2, p.Line, "Line should be equal")
 
-	node, err = p.tryParse(p.parseWhitespaces)
+	node, err = p.tryParseWhitespaces()
 	assert.NotNil(t, err)
 	assert.Nil(t, node, "Whitespace should not be parsed")
 	assert.Equal(t, 3, p.Current, "Offset should be equal")

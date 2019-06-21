@@ -29,9 +29,17 @@ type (
 	}
 
 	Method struct {
-		begin  Position
-		end    Position
-		Method string
+		begin Position
+		end   Position
+		Value string
+	}
+
+	Request struct {
+		begin       Position
+		end         Position
+		Whitespaces *Whitespaces
+		Method      *Method
+		Spaces      *Spaces
 	}
 )
 
@@ -64,5 +72,13 @@ func (t *Method) Begin() Position {
 }
 
 func (t *Method) End() Position {
+	return t.end
+}
+
+func (t *Request) Begin() Position {
+	return t.begin
+}
+
+func (t *Request) End() Position {
 	return t.end
 }

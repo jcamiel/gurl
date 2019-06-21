@@ -1,6 +1,6 @@
 package parser
 
-func (p *Parser) parseWhitespaces() (Node, error) {
+func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 
 	begin, beginLine := p.Current, p.Line
 
@@ -14,12 +14,27 @@ func (p *Parser) parseWhitespaces() (Node, error) {
 
 	end, endLine := p.Current, p.Line
 
-	beginPos := Position{begin, beginLine}
-	endPos := Position{end, endLine}
-	return &Whitespaces{beginPos, endPos, string(whitespaces)}, nil
+	return &Whitespaces{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		string(whitespaces)}, nil
 }
 
-func (p *Parser) parseSpaces() (Node, error) {
+func (p *Parser) tryParseWhitespaces() (*Whitespaces, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	node, err := p.parseWhitespaces()
+
+	if err != nil {
+		p.Current, p.Line = begin, beginLine
+		return nil, err
+	}
+
+	return node, nil
+}
+
+func (p *Parser) parseSpaces() (*Spaces, error) {
 
 	begin, beginLine := p.Current, p.Line
 
@@ -33,7 +48,8 @@ func (p *Parser) parseSpaces() (Node, error) {
 
 	end, endLine := p.Current, p.Line
 
-	beginPos := Position{begin, beginLine}
-	endPos := Position{end, endLine}
-	return &Spaces{beginPos, endPos, string(spaces)}, nil
+	return &Spaces{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		string(spaces)}, nil
 }
