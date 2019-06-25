@@ -28,10 +28,43 @@ func TestParseMethodFailed(t *testing.T) {
 }
 
 func TestParseRequest(t *testing.T) {
-	text := "\n\nPOST	http://google.com"
-	p := NewParserFromString(text, "")
-	node, _ := p.parseRequest()
-	assert.Equal(t, "POST", node.Method.Value)
+
+	var text string
+	var node *Request
+	var p *Parser
+
+	text = "GET	http://www.example.org"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseRequest()
+	assert.NotNil(t, node)
+
+	text = "GET\u0020http://www.example.org"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseRequest()
+	assert.NotNil(t, node)
+
+	text = "GET	http://www.example.org	# Some comment"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseRequest()
+	assert.NotNil(t, node)
+
+	text = "GET http://www.example.org/foo.html#bar # Some comment"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseRequest()
+	assert.NotNil(t, node)
+
+}
+
+func TestParseRequestWithWarning(t *testing.T) {
+
+	var text string
+	var node *Request
+	var p *Parser
+
+	text = "GET http://google.com# Url and comment should be separated by at least a space"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseRequest()
+	assert.NotNil(t, node)
 }
 
 func TestParseFailed(t *testing.T) {

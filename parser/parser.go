@@ -32,7 +32,7 @@ func (p *Parser) readRune() (rune, error) {
 		return 0, err
 	}
 	p.Current += 1
-	if r == newLine {
+	if r == lineFeed {
 		p.Line += 1
 	}
 	return r, nil

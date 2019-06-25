@@ -1,11 +1,12 @@
 package parser
 
 const (
-	space   = '\u0020'
-	tab     = '\u0009'
-	newLine = '\u000a'
-	quote   = '\u0022'
-	hash    = '\u0023'
+	space          = '\u0020'
+	tab            = '\u0009'
+	lineFeed       = '\u000a'
+	carriageReturn = '\u000d'
+	quote          = '\u0022'
+	hash           = '\u0023'
 )
 
 func Equal(a, b []rune) bool {
@@ -27,4 +28,12 @@ func RuneInSlice(a rune, list []rune) bool {
 		}
 	}
 	return false
+}
+
+func IsNewline(r rune) bool {
+	return r == lineFeed || r == carriageReturn
+}
+
+func IsSpace(r rune) bool {
+	return r == space || r == tab
 }

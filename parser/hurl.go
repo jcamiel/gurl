@@ -6,14 +6,12 @@ func (p *Parser) parseRequest() (*Request, error) {
 
 	begin, beginLine := p.Current, p.Line
 
-	whitespaces, _ := p.tryParseWhitespaces()
-
 	method, err := p.parseMethod()
 	if err != nil {
 		return nil, err
 	}
 
-	spaces, err := p.parseSpaces()
+	spaces0, err := p.parseSpaces()
 	if err != nil {
 		return nil, err
 	}
@@ -23,15 +21,27 @@ func (p *Parser) parseRequest() (*Request, error) {
 		return nil, err
 	}
 
+	spaces1, _ := p.tryParseSpaces()
+
+	comment, _ := p.tryParseComment()
+
+	eol, err := p.parseEol()
+	if err != nil {
+		return nil, err
+	}
+
 	end, endLine := p.Current, p.Line
 
 	return &Request{
 		Position{begin, beginLine},
 		Position{end, endLine},
-		whitespaces,
 		method,
-		spaces,
-		url}, nil
+		spaces0,
+		url,
+		spaces1,
+		comment,
+		eol,
+	}, nil
 }
 
 func (p *Parser) parseMethod() (*Method, error) {
@@ -75,7 +85,7 @@ func (p *Parser) parseUrl() (*Url, error) {
 	})
 
 	if err != nil || len(url) == 0 {
-		return nil, newSyntaxError(p, "url expected")
+		return nil, newSyntaxError(p, "url is expected")
 	}
 
 	end, endLine := p.Current, p.Line
@@ -84,4 +94,8 @@ func (p *Parser) parseUrl() (*Url, error) {
 		Position{begin, beginLine},
 		Position{end, endLine},
 		string(url)}, nil
+}
+
+func (p *Parser) parseEol() (*Eol, error) {
+	return nil, nil
 }

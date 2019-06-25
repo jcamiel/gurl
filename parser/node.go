@@ -16,6 +16,12 @@ type (
 		end   Position
 	}
 
+	Eol struct {
+		begin Position
+		end   Position
+		Text string
+	}
+
 	Spaces struct {
 		begin Position
 		end   Position
@@ -29,12 +35,14 @@ type (
 	}
 
 	Request struct {
-		begin       Position
-		end         Position
-		Whitespaces *Whitespaces
-		Method      *Method
-		Spaces      *Spaces
-		Url			*Url
+		begin   Position
+		end     Position
+		Method  *Method
+		Spaces0 *Spaces
+		Url     *Url
+		Spaces1 *Spaces
+		Comment *Comment
+		Eol		*Eol
 	}
 
 	Method struct {
@@ -45,8 +53,14 @@ type (
 
 	Url struct {
 		begin Position
-		end Position
-		Text string
+		end   Position
+		Text  string
+	}
+
+	Comment struct {
+		begin Position
+		end   Position
+		Text  string
 	}
 )
 
@@ -55,6 +69,14 @@ func (t *Eof) Begin() Position {
 }
 
 func (t *Eof) End() Position {
+	return t.end
+}
+
+func (t *Eol) Begin() Position {
+	return t.begin
+}
+
+func (t *Eol) End() Position {
 	return t.end
 }
 
@@ -95,5 +117,13 @@ func (t *Url) Begin() Position {
 }
 
 func (t *Url) End() Position {
+	return t.end
+}
+
+func (t *Comment) Begin() Position {
+	return t.begin
+}
+
+func (t *Comment) End() Position {
 	return t.end
 }
