@@ -11,11 +11,6 @@ type (
 		End() Position
 	}
 
-	Eof struct {
-		begin Position
-		end   Position
-	}
-
 	Eol struct {
 		begin Position
 		end   Position
@@ -63,14 +58,6 @@ type (
 		Text  string
 	}
 )
-
-func (t *Eof) Begin() Position {
-	return t.begin
-}
-
-func (t *Eof) End() Position {
-	return t.end
-}
 
 func (t *Eol) Begin() Position {
 	return t.begin

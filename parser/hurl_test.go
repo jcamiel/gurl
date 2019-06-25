@@ -55,17 +55,6 @@ func TestParseRequest(t *testing.T) {
 
 }
 
-func TestParseRequestWithWarning(t *testing.T) {
-
-	var text string
-	var node *Request
-	var p *Parser
-
-	text = "GET http://google.com# Url and comment should be separated by at least a space"
-	p = NewParserFromString(text, "")
-	node, _ = p.parseRequest()
-	assert.NotNil(t, node)
-}
 
 func TestParseFailed(t *testing.T) {
 	text := "\n\nPOSThttp://google.com"

@@ -1,6 +1,9 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 func (p *Parser) parseRequest() (*Request, error) {
 
@@ -93,9 +96,28 @@ func (p *Parser) parseUrl() (*Url, error) {
 	return &Url{
 		Position{begin, beginLine},
 		Position{end, endLine},
-		string(url)}, nil
+		string(url),
+	}, nil
 }
 
 func (p *Parser) parseEol() (*Eol, error) {
-	return nil, nil
+
+	begin, beginLine := p.Current, p.Line
+
+	eol, err := p.readRunesWhile(func(r rune) bool {
+		return IsNewline(r)
+	})
+
+	if err != nil && err != io.EOF {
+		return nil, newSyntaxError(p, "newline is expected")
+	}
+
+	end, endLine := p.Current, p.Line
+
+	return &Eol{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		string(eol),
+	}, nil
+
 }
