@@ -106,3 +106,7 @@ func (p *Parser) tryParseComment() (*Comment, error) {
 
 	return node, nil
 }
+
+func (p *Parser) parseComments() (*Comments, error) {
+
+}

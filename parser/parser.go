@@ -107,6 +107,3 @@ func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d] %s", e.Pos.Line, e.msg)
 }
 
-func (p *Parser) isLeftToRead() bool {
-	return p.Current < len(p.Buffer)
-}

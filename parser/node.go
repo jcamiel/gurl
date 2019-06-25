@@ -14,7 +14,7 @@ type (
 	Eol struct {
 		begin Position
 		end   Position
-		Text string
+		Text  string
 	}
 
 	Spaces struct {
@@ -37,7 +37,7 @@ type (
 		Url     *Url
 		Spaces1 *Spaces
 		Comment *Comment
-		Eol		*Eol
+		Eol     *Eol
 	}
 
 	Method struct {
@@ -56,6 +56,23 @@ type (
 		begin Position
 		end   Position
 		Text  string
+	}
+
+	Comments struct {
+		begin    Position
+		end      Position
+		CommentLines []CommentLine
+	}
+)
+
+// Node not defined in the hurl spec,
+type (
+	CommentLine struct {
+		begin    Position
+		end      Position
+		Comment     *Comment
+		Eol         *Eol
+		Whitespaces *Whitespaces
 	}
 )
 
@@ -112,5 +129,21 @@ func (t *Comment) Begin() Position {
 }
 
 func (t *Comment) End() Position {
+	return t.end
+}
+
+func (t *CommentLine) Begin() Position {
+	return t.begin
+}
+
+func (t *CommentLine) End() Position {
+	return t.end
+}
+
+func (t *Comments) Begin() Position {
+	return t.begin
+}
+
+func (t *Comments) End() Position {
 	return t.end
 }
