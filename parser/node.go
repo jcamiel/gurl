@@ -30,14 +30,15 @@ type (
 	}
 
 	Request struct {
-		begin   Position
-		end     Position
-		Method  *Method
-		Spaces0 *Spaces
-		Url     *Url
-		Spaces1 *Spaces
-		Comment *Comment
-		Eol     *Eol
+		begin    Position
+		end      Position
+		Comments *Comments
+		Method   *Method
+		Spaces0  *Spaces
+		Url      *Url
+		Spaces1  *Spaces
+		Comment  *Comment
+		Eol      *Eol
 	}
 
 	Method struct {
@@ -59,91 +60,32 @@ type (
 	}
 
 	Comments struct {
-		begin    Position
-		end      Position
-		CommentLines []CommentLine
+		begin        Position
+		end          Position
+		CommentLines []*CommentLine
+	}
+
+	Entry struct {
+		begin   Position
+		end     Position
+		Request *Request
+	}
+
+	HurlFile struct {
+		begin       Position
+		end         Position
+		Whitespaces *Whitespaces
+		Entries     []*Entry
 	}
 )
 
 // Node not defined in the hurl spec,
 type (
 	CommentLine struct {
-		begin    Position
-		end      Position
+		begin       Position
+		end         Position
 		Comment     *Comment
 		Eol         *Eol
 		Whitespaces *Whitespaces
 	}
 )
-
-func (t *Eol) Begin() Position {
-	return t.begin
-}
-
-func (t *Eol) End() Position {
-	return t.end
-}
-
-func (t *Spaces) Begin() Position {
-	return t.begin
-}
-
-func (t *Spaces) End() Position {
-	return t.end
-}
-
-func (t *Whitespaces) Begin() Position {
-	return t.begin
-}
-
-func (t *Whitespaces) End() Position {
-	return t.end
-}
-
-func (t *Method) Begin() Position {
-	return t.begin
-}
-
-func (t *Method) End() Position {
-	return t.end
-}
-
-func (t *Request) Begin() Position {
-	return t.begin
-}
-
-func (t *Request) End() Position {
-	return t.end
-}
-
-func (t *Url) Begin() Position {
-	return t.begin
-}
-
-func (t *Url) End() Position {
-	return t.end
-}
-
-func (t *Comment) Begin() Position {
-	return t.begin
-}
-
-func (t *Comment) End() Position {
-	return t.end
-}
-
-func (t *CommentLine) Begin() Position {
-	return t.begin
-}
-
-func (t *CommentLine) End() Position {
-	return t.end
-}
-
-func (t *Comments) Begin() Position {
-	return t.begin
-}
-
-func (t *Comments) End() Position {
-	return t.end
-}

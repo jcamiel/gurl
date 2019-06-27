@@ -5,9 +5,60 @@ import (
 	"io"
 )
 
+func (p *Parser) parseHurlFile() (*HurlFile, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	whitespaces, _ := p.tryParseWhitespaces()
+
+	var entries []*Entry
+
+	for {
+		e, err := p.parseEntry()
+		if err != nil {
+			if p.hasRuneToRead() {
+				p.seekToNextEol()
+				continue
+			}
+			break
+		}
+		entries = append(entries, e)
+	}
+
+	end, endLine := p.Current, p.Line
+
+	return &HurlFile{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		whitespaces,
+		entries,
+	}, nil
+
+}
+
+func (p *Parser) parseEntry() (*Entry, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	request, err := p.parseRequest()
+	if err != nil {
+		return nil, err
+	}
+
+	end, endLine := p.Current, p.Line
+
+	return &Entry{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		request,
+	}, nil
+}
+
 func (p *Parser) parseRequest() (*Request, error) {
 
 	begin, beginLine := p.Current, p.Line
+
+	comments, _ := p.tryParseComments()
 
 	method, err := p.parseMethod()
 	if err != nil {
@@ -38,6 +89,7 @@ func (p *Parser) parseRequest() (*Request, error) {
 	return &Request{
 		Position{begin, beginLine},
 		Position{end, endLine},
+		comments,
 		method,
 		spaces0,
 		url,
@@ -120,4 +172,14 @@ func (p *Parser) parseEol() (*Eol, error) {
 		string(eol),
 	}, nil
 
+}
+
+
+// Specific debug
+func (p *Parser) seekToNextEol()  {
+	_, _ = p.readRunesWhile(func(r rune) bool {
+		return !IsNewline(r)
+	})
+
+	_, _ = p.parseWhitespaces()
 }

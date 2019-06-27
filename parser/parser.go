@@ -51,8 +51,8 @@ func (p *Parser) readRunes(count int) ([]rune, error) {
 }
 
 func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
-	begin := p.Current
-	end := begin
+
+	begin, end := p.Current, p.Current
 
 	for {
 		r, err := p.nextRune()
@@ -107,3 +107,6 @@ func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d] %s", e.Pos.Line, e.msg)
 }
 
+func (p *Parser) hasRuneToRead() bool {
+	return p.Current < len(p.Buffer)
+}

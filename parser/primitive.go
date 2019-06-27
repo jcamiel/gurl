@@ -90,7 +90,8 @@ func (p *Parser) parseComment() (*Comment, error) {
 	return &Comment{
 		Position{begin, beginLine},
 		Position{end, endLine},
-		string(comment)}, nil
+		string(comment),
+	}, nil
 
 }
 
@@ -107,6 +108,85 @@ func (p *Parser) tryParseComment() (*Comment, error) {
 	return node, nil
 }
 
+func (p *Parser) parseCommentLine() (*CommentLine, error) {
+
+	begin, beginLine := p.Current, p.Line
+
+	comment, err := p.parseComment()
+	if err != nil {
+		return nil, err
+	}
+
+	eol, err := p.parseEol()
+	if err != nil {
+		return nil, err
+	}
+
+	whitespaces, _ := p.tryParseWhitespaces()
+
+	end, endLine := p.Current, p.Line
+
+	return &CommentLine{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		comment,
+		eol,
+		whitespaces,
+	}, nil
+
+}
+
+func (p *Parser) tryParseCommentLine() (*CommentLine, error) {
+	begin, beginLine := p.Current, p.Line
+
+	node, err := p.parseCommentLine()
+
+	if err != nil {
+		p.Current, p.Line = begin, beginLine
+		return nil, err
+	}
+
+	return node, nil
+}
+
 func (p *Parser) parseComments() (*Comments, error) {
 
+	begin, beginLine := p.Current, p.Line
+
+	var comments []*CommentLine
+
+	for {
+		c, err := p.tryParseCommentLine()
+		if err != nil {
+			break
+		}
+		comments = append(comments, c)
+	}
+
+	if len(comments) == 0 {
+		return nil, newSyntaxError(p, "comments is expected")
+	}
+
+	end, endLine := p.Current, p.Line
+
+	return &Comments{
+		Position{begin, beginLine},
+		Position{end, endLine},
+		comments,
+	}, nil
+
+
+}
+
+func (p *Parser) tryParseComments() (*Comments, error) {
+	begin, beginLine := p.Current, p.Line
+
+	node, err := p.parseComments()
+
+	if err != nil {
+		p.Current, p.Line = begin, beginLine
+		return nil, err
+	}
+
+	return node, nil
 }

@@ -8,7 +8,7 @@ import (
 func TestParseWhitespaces(t *testing.T) {
 
 	var p *Parser
-	var node Node
+	var node interface{}
 	var err error
 
 	var tests = []struct {
@@ -59,4 +59,59 @@ func TestParseWhitespacesFailed(t *testing.T) {
 	node, err := p.parseWhitespaces()
 	assert.Nil(t, node)
 	assert.IsType(t, &SyntaxError{}, err)
+}
+
+func TestParseComment(t *testing.T) {
+
+	var text string
+	var node *Comment
+	var p *Parser
+
+	text = "# Some comments\nBla bla bal"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseComment()
+	assert.NotNil(t, node)
+
+	text = "abcedf"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseComment()
+	assert.Nil(t, node)
+}
+
+func TestParseCommentLine(t *testing.T) {
+
+	var text string
+	var node *CommentLine
+	var p *Parser
+
+	text = "# Some comments\n\n\n\t\t\tBla bla bal"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseCommentLine()
+	assert.NotNil(t, node)
+
+	text = "abcedf"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseCommentLine()
+	assert.Nil(t, node)
+
+}
+
+func TestParseComments(t *testing.T) {
+
+	var text string
+	var node *Comments
+	var p *Parser
+
+	text = `# Some comments on line 1
+# Some comments on line 2
+
+# Some comments on line 3
+# Some comments on line 4
+
+
+Bla bla bal`
+
+	p = NewParserFromString(text, "")
+	node, _ = p.parseComments()
+	assert.NotNil(t, node)
 }
