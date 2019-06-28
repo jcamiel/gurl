@@ -1,4 +1,4 @@
-package parser
+package ast
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -43,14 +43,14 @@ func TestParseOptionalWhitespaces(t *testing.T) {
 	node, err := p.tryParseWhitespaces()
 	assert.Nil(t, err)
 	assert.Equal(t, &Whitespaces{Position{0, 1}, Position{3, 2}, "\u0020\u0020\n"}, node, "Whitespaces should be parsed")
-	assert.Equal(t, 3, p.Current, "Offset should be equal")
-	assert.Equal(t, 2, p.Line, "Line should be equal")
+	assert.Equal(t, 3, p.current, "Offset should be equal")
+	assert.Equal(t, 2, p.line, "line should be equal")
 
 	node, err = p.tryParseWhitespaces()
 	assert.NotNil(t, err)
 	assert.Nil(t, node, "Whitespace should not be parsed")
-	assert.Equal(t, 3, p.Current, "Offset should be equal")
-	assert.Equal(t, 2, p.Line, "Offset should be equal")
+	assert.Equal(t, 3, p.current, "Offset should be equal")
+	assert.Equal(t, 2, p.line, "Offset should be equal")
 }
 
 func TestParseWhitespacesFailed(t *testing.T) {

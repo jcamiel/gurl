@@ -1,8 +1,8 @@
-package parser
+package ast
 
 func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	whitespaces, err := p.readRunesWhile(func(r rune) bool {
 		return IsSpace(r) || IsNewline(r)
@@ -12,22 +12,21 @@ func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 		return nil, newSyntaxError(p, "space, tab or newline is expected")
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Whitespaces{
-		Position{begin, beginLine},
-		Position{end, endLine},
-		string(whitespaces)}, nil
+		Position{current, line},
+		Position{p.current, p.line},
+		string(whitespaces),
+	}, nil
 }
 
 func (p *Parser) tryParseWhitespaces() (*Whitespaces, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	node, err := p.parseWhitespaces()
 
 	if err != nil {
-		p.Current, p.Line = begin, beginLine
+		p.current, p.line = current, line
 		return nil, err
 	}
 
@@ -36,7 +35,7 @@ func (p *Parser) tryParseWhitespaces() (*Whitespaces, error) {
 
 func (p *Parser) parseSpaces() (*Spaces, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	spaces, err := p.readRunesWhile(func(r rune) bool {
 		return IsSpace(r)
@@ -46,22 +45,21 @@ func (p *Parser) parseSpaces() (*Spaces, error) {
 		return nil, newSyntaxError(p, "space or tab is expected")
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Spaces{
-		Position{begin, beginLine},
-		Position{end, endLine},
-		string(spaces)}, nil
+		Position{current, line},
+		Position{p.current, p.line},
+		string(spaces),
+	}, nil
 }
 
 func (p *Parser) tryParseSpaces() (*Spaces, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	node, err := p.parseSpaces()
 
 	if err != nil {
-		p.Current, p.Line = begin, beginLine
+		p.current, p.line = current, line
 		return nil, err
 	}
 
@@ -70,7 +68,7 @@ func (p *Parser) tryParseSpaces() (*Spaces, error) {
 
 func (p *Parser) parseComment() (*Comment, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	r, err := p.nextRune()
 	if err != nil {
@@ -85,23 +83,22 @@ func (p *Parser) parseComment() (*Comment, error) {
 		return !IsNewline(r)
 	})
 
-	end, endLine := p.Current, p.Line
-
 	return &Comment{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		string(comment),
 	}, nil
 
 }
 
 func (p *Parser) tryParseComment() (*Comment, error) {
-	begin, beginLine := p.Current, p.Line
+
+	current, line := p.current, p.line
 
 	node, err := p.parseComment()
 
 	if err != nil {
-		p.Current, p.Line = begin, beginLine
+		p.current, p.line = current, line
 		return nil, err
 	}
 
@@ -110,7 +107,7 @@ func (p *Parser) tryParseComment() (*Comment, error) {
 
 func (p *Parser) parseCommentLine() (*CommentLine, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	comment, err := p.parseComment()
 	if err != nil {
@@ -124,11 +121,9 @@ func (p *Parser) parseCommentLine() (*CommentLine, error) {
 
 	whitespaces, _ := p.tryParseWhitespaces()
 
-	end, endLine := p.Current, p.Line
-
 	return &CommentLine{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		comment,
 		eol,
 		whitespaces,
@@ -137,12 +132,13 @@ func (p *Parser) parseCommentLine() (*CommentLine, error) {
 }
 
 func (p *Parser) tryParseCommentLine() (*CommentLine, error) {
-	begin, beginLine := p.Current, p.Line
+
+	current, line := p.current, p.line
 
 	node, err := p.parseCommentLine()
 
 	if err != nil {
-		p.Current, p.Line = begin, beginLine
+		p.current, p.line = current, line
 		return nil, err
 	}
 
@@ -151,7 +147,7 @@ func (p *Parser) tryParseCommentLine() (*CommentLine, error) {
 
 func (p *Parser) parseComments() (*Comments, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	var comments []*CommentLine
 
@@ -167,11 +163,9 @@ func (p *Parser) parseComments() (*Comments, error) {
 		return nil, newSyntaxError(p, "comments is expected")
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Comments{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		comments,
 	}, nil
 
@@ -179,12 +173,13 @@ func (p *Parser) parseComments() (*Comments, error) {
 }
 
 func (p *Parser) tryParseComments() (*Comments, error) {
-	begin, beginLine := p.Current, p.Line
+
+	current, line := p.current, p.line
 
 	node, err := p.parseComments()
 
 	if err != nil {
-		p.Current, p.Line = begin, beginLine
+		p.current, p.line = current, line
 		return nil, err
 	}
 

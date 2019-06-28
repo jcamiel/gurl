@@ -1,4 +1,4 @@
-package parser
+package ast
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 )
 
 type Parser struct {
-	Filename string // filename, if any
-	Buffer   []rune // file content
-	Current  int    // start of the buffer, current rune
-	Line     int    // current line number in rune, starting at 1
+	filename string // filename, if any
+	buffer   []rune // file content
+	current  int    // start of the buffer, current rune
+	line     int    // current line number in rune, starting at 1
 }
 
 func NewParserFromFile(path string) (*Parser, error) {
@@ -23,7 +23,11 @@ func NewParserFromFile(path string) (*Parser, error) {
 
 func NewParserFromString(text string, filename string) *Parser {
 	runes := []rune(text)
-	return &Parser{Filename: filename, Buffer: runes, Line: 1}
+	return &Parser{filename: filename, buffer: runes, line: 1}
+}
+
+func (p *Parser) Parse() (*HurlFile, error) {
+	return p.parseHurlFile()
 }
 
 func (p *Parser) readRune() (rune, error) {
@@ -31,28 +35,28 @@ func (p *Parser) readRune() (rune, error) {
 	if err != nil {
 		return 0, err
 	}
-	p.Current += 1
+	p.current += 1
 	if r == lineFeed {
-		p.Line += 1
+		p.line += 1
 	}
 	return r, nil
 }
 
 func (p *Parser) readRunes(count int) ([]rune, error) {
-	begin := p.Current
+	begin := p.current
 	for i := 0; i < count; i++ {
 		_, err := p.readRune()
 		if err != nil {
 			return nil, err
 		}
 	}
-	end := p.Current
-	return p.Buffer[begin:end], nil
+	end := p.current
+	return p.buffer[begin:end], nil
 }
 
 func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
 
-	begin, end := p.Current, p.Current
+	begin, end := p.current, p.current
 
 	for {
 		r, err := p.nextRune()
@@ -61,27 +65,27 @@ func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
 		}
 		if f(r) {
 			_, _ = p.readRune()
-			end = p.Current
+			end = p.current
 		} else {
 			break
 		}
 	}
-	return p.Buffer[begin:end], nil
+	return p.buffer[begin:end], nil
 }
 
 func (p *Parser) nextRune() (rune, error) {
-	if p.Current >= len(p.Buffer) {
+	if p.current >= len(p.buffer) {
 		return 0, io.EOF
 	}
-	return p.Buffer[p.Current], nil
+	return p.buffer[p.current], nil
 }
 
 func (p *Parser) nextRunes(count int) ([]rune, error) {
-	end := p.Current + count
-	if end > len(p.Buffer) {
+	end := p.current + count
+	if end > len(p.buffer) {
 		return nil, io.EOF
 	}
-	return p.Buffer[p.Current:end], nil
+	return p.buffer[p.current:end], nil
 }
 
 func (p *Parser) isNext(text string) bool {
@@ -94,7 +98,7 @@ func (p *Parser) isNext(text string) bool {
 }
 
 func newSyntaxError(p *Parser, text string) error {
-	pos := Position{p.Current, p.Line}
+	pos := Position{p.current, p.line}
 	return &SyntaxError{text, pos}
 }
 
@@ -108,5 +112,5 @@ func (e *SyntaxError) Error() string {
 }
 
 func (p *Parser) hasRuneToRead() bool {
-	return p.Current < len(p.Buffer)
+	return p.current < len(p.buffer)
 }

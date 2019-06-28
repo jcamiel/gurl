@@ -1,4 +1,4 @@
-package parser
+package ast
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 func (p *Parser) parseHurlFile() (*HurlFile, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	whitespaces, _ := p.tryParseWhitespaces()
 
@@ -17,7 +17,7 @@ func (p *Parser) parseHurlFile() (*HurlFile, error) {
 		e, err := p.parseEntry()
 		if err != nil {
 			if p.hasRuneToRead() {
-				p.seekToNextEol()
+				p.skipToNextEol()
 				continue
 			}
 			break
@@ -25,11 +25,9 @@ func (p *Parser) parseHurlFile() (*HurlFile, error) {
 		entries = append(entries, e)
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &HurlFile{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		whitespaces,
 		entries,
 	}, nil
@@ -38,25 +36,23 @@ func (p *Parser) parseHurlFile() (*HurlFile, error) {
 
 func (p *Parser) parseEntry() (*Entry, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	request, err := p.parseRequest()
 	if err != nil {
 		return nil, err
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Entry{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		request,
 	}, nil
 }
 
 func (p *Parser) parseRequest() (*Request, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	comments, _ := p.tryParseComments()
 
@@ -84,11 +80,9 @@ func (p *Parser) parseRequest() (*Request, error) {
 		return nil, err
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Request{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		comments,
 		method,
 		spaces0,
@@ -114,8 +108,8 @@ func (p *Parser) parseMethod() (*Method, error) {
 	for _, method := range methods {
 		if p.isNext(method) {
 			count := len(method)
-			begin := Position{p.Current, p.Line}
-			end := Position{p.Current + count, p.Line}
+			begin := Position{p.current, p.line}
+			end := Position{p.current + count, p.line}
 			_, _ = p.readRunes(count)
 			return &Method{begin, end, method}, nil
 		}
@@ -125,7 +119,7 @@ func (p *Parser) parseMethod() (*Method, error) {
 
 func (p *Parser) parseUrl() (*Url, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	genDelims := []rune{':', '/', '?', '#', '[', ']', '@'}
 	subDelims := []rune{'!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='}
@@ -143,18 +137,16 @@ func (p *Parser) parseUrl() (*Url, error) {
 		return nil, newSyntaxError(p, "url is expected")
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Url{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		string(url),
 	}, nil
 }
 
 func (p *Parser) parseEol() (*Eol, error) {
 
-	begin, beginLine := p.Current, p.Line
+	current, line := p.current, p.line
 
 	eol, err := p.readRunesWhile(func(r rune) bool {
 		return IsNewline(r)
@@ -164,11 +156,9 @@ func (p *Parser) parseEol() (*Eol, error) {
 		return nil, newSyntaxError(p, "newline is expected")
 	}
 
-	end, endLine := p.Current, p.Line
-
 	return &Eol{
-		Position{begin, beginLine},
-		Position{end, endLine},
+		Position{current, line},
+		Position{p.current, p.line},
 		string(eol),
 	}, nil
 
@@ -176,7 +166,7 @@ func (p *Parser) parseEol() (*Eol, error) {
 
 
 // Specific debug
-func (p *Parser) seekToNextEol()  {
+func (p *Parser) skipToNextEol()  {
 	_, _ = p.readRunesWhile(func(r rune) bool {
 		return !IsNewline(r)
 	})

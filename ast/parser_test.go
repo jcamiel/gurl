@@ -1,4 +1,4 @@
-package parser
+package ast
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -13,15 +13,15 @@ func TestReadRune(t *testing.T) {
 	r, err := parser.readRune()
 	assert.Nil(t, err)
 	assert.Equal(t, 'S', r, "First rune should be equal")
-	assert.Equal(t, 1, parser.Current, "Parser index should be incremented")
-	assert.Equal(t, 1, parser.Line, "Parser line should be equal")
+	assert.Equal(t, 1, parser.current, "Parser index should be incremented")
+	assert.Equal(t, 1, parser.line, "Parser line should be equal")
 }
 
 func TestLineCount(t *testing.T) {
 	text := `Some multiline string:
-Line 2
-Line 3
-Line 4`
+line 2
+line 3
+line 4`
 	parser := NewParserFromString(text, "")
 
 	for {
@@ -30,7 +30,7 @@ Line 4`
 			break
 		}
 	}
-	assert.Equal(t, 4, parser.Line, "Parser line should be equal")
+	assert.Equal(t, 4, parser.line, "Parser line should be equal")
 }
 
 func TestEndOfFile(t *testing.T) {

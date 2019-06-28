@@ -1,4 +1,4 @@
-package parser
+package ast
 
 const (
 	space          = '\u0020'
