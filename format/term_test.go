@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestPlainFormatter(t *testing.T) {
+func TestTermFormatter(t *testing.T) {
 
 	input := `# GENERATED - DO NOT MODIFY
 # =========================
@@ -40,7 +40,7 @@ header Location equals "https://sso.orange.fr/espace-client/m/?page=demenagement
 	hurl, _ := p.Parse()
 	assert.NotNil(t, hurl)
 
-	formatter := NewPlainFormatter()
+	formatter := NewTermFormatter()
 	output := formatter.ToText(hurl)
 	assert.NotNil(t, output)
 }

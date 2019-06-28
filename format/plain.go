@@ -8,6 +8,11 @@ type PlainFormatter struct {
 	text string
 }
 
+func NewPlainFormatter() *PlainFormatter {
+	return &PlainFormatter{}
+}
+
+
 func (p *PlainFormatter) ToText(hurlFile *ast.HurlFile) string {
 	p.text = ""
 	ast.Walk(p, hurlFile)

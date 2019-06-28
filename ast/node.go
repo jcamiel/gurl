@@ -7,31 +7,31 @@ type Position struct {
 
 type (
 	Node interface {
-		Begin() Position
-		End() Position
+		GetBegin() Position
+		GetEnd() Position
 	}
 
 	Eol struct {
-		begin Position
-		end   Position
+		Begin Position
+		End   Position
 		Text  string
 	}
 
 	Spaces struct {
-		begin Position
-		end   Position
+		Begin Position
+		End   Position
 		Text  string
 	}
 
 	Whitespaces struct {
-		begin Position
-		end   Position
+		Begin Position
+		End   Position
 		Text  string
 	}
 
 	Request struct {
-		begin    Position
-		end      Position
+		Begin    Position
+		End      Position
 		Comments *Comments
 		Method   *Method
 		Spaces0  *Spaces
@@ -42,38 +42,38 @@ type (
 	}
 
 	Method struct {
-		begin Position
-		end   Position
+		Begin Position
+		End   Position
 		Value string
 	}
 
 	Url struct {
-		begin Position
-		end   Position
+		Begin Position
+		End   Position
 		Text  string
 	}
 
 	Comment struct {
-		begin Position
-		end   Position
+		Begin Position
+		End   Position
 		Text  string
 	}
 
 	Comments struct {
-		begin        Position
-		end          Position
+		Begin        Position
+		End          Position
 		CommentLines []*CommentLine
 	}
 
 	Entry struct {
-		begin   Position
-		end     Position
+		Begin   Position
+		End     Position
 		Request *Request
 	}
 
 	HurlFile struct {
-		begin       Position
-		end         Position
+		Begin       Position
+		End         Position
 		Whitespaces *Whitespaces
 		Entries     []*Entry
 	}
@@ -83,90 +83,98 @@ type (
 // Node not defined in the hurl spec,
 type (
 	CommentLine struct {
-		begin       Position
-		end         Position
+		Begin       Position
+		End         Position
 		Comment     *Comment
 		Eol         *Eol
 		Whitespaces *Whitespaces
 	}
 )
 
-func (h *HurlFile) Begin() Position {
-	return h.begin
+func (h *HurlFile) GetBegin() Position {
+	return h.Begin
 }
 
-func (h *HurlFile) End() Position {
-	return h.end
+func (h *HurlFile) GetEnd() Position {
+	return h.End
 }
 
-func (w *Whitespaces) Begin() Position {
-	return w.begin
+func (w *Whitespaces) GetBegin() Position {
+	return w.Begin
 }
 
-func (w *Whitespaces) End() Position {
-	return w.end
+func (w *Whitespaces) GetEnd() Position {
+	return w.End
 }
 
-func (e *Entry) Begin() Position {
-	return e.begin
+func (e *Entry) GetBegin() Position {
+	return e.Begin
 }
 
-func (e *Entry) End() Position {
-	return e.end
+func (e *Entry) GetEnd() Position {
+	return e.End
 }
 
-func (r *Request) Begin() Position {
-	return r.begin
+func (r *Request) GetBegin() Position {
+	return r.Begin
 }
 
-func (r *Request) End() Position {
-	return r.end
+func (r *Request) GetEnd() Position {
+	return r.End
 }
 
-func (c *Comments) Begin() Position {
-	return c.begin
+func (c *Comments) GetBegin() Position {
+	return c.Begin
 }
 
-func (c *Comments) End() Position {
-	return c.end
+func (c *Comments) GetEnd() Position {
+	return c.End
 }
 
-func (m *Method) Begin() Position {
-	return m.begin
+func (m *Method) GetBegin() Position {
+	return m.Begin
 }
 
-func (m *Method) End() Position {
-	return m.end
+func (m *Method) GetEnd() Position {
+	return m.End
 }
 
-func (s *Spaces) Begin() Position {
-	return s.begin
+func (s *Spaces) GetBegin() Position {
+	return s.Begin
 }
 
-func (s *Spaces) End() Position {
-	return s.end
+func (s *Spaces) GetEnd() Position {
+	return s.End
 }
 
-func (c *CommentLine) Begin() Position {
-	return c.begin
+func (c *CommentLine) GetBegin() Position {
+	return c.Begin
 }
 
-func (c *CommentLine) End() Position {
-	return c.end
+func (c *CommentLine) GetEnd() Position {
+	return c.End
 }
 
-func (c *Comment) Begin() Position {
-	return c.begin
+func (c *Comment) GetBegin() Position {
+	return c.Begin
 }
 
-func (c *Comment) End() Position {
-	return c.end
+func (c *Comment) GetEnd() Position {
+	return c.End
 }
 
-func (e *Eol) Begin() Position {
-	return e.begin
+func (e *Eol) GetBegin() Position {
+	return e.Begin
 }
 
-func (e *Eol) End() Position {
-	return e.end
+func (e *Eol) GetEnd() Position {
+	return e.End
+}
+
+func (u *Url) GetBegin() Position {
+	return u.Begin
+}
+
+func (u *Url) GetEnd() Position {
+	return u.End
 }

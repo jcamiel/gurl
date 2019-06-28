@@ -29,6 +29,15 @@ func Walk(v Visitor, node Node) {
 		}
 		Walk(v, n.Method)
 		Walk(v, n.Spaces0)
+		Walk(v, n.Url)
+		if n.Spaces1 != nil {
+			Walk(v, n.Spaces1)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
+		Walk(v, n.Eol)
+
 	case *Comments:
 		for _, c := range n.CommentLines {
 			Walk(v, c)

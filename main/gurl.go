@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gurl/ast"
+	"gurl/format"
 	"log"
 	"os"
 )
@@ -18,9 +19,18 @@ func main() {
 	flag.Parse()
 
 	for _, file := range os.Args[1:] {
-		_, err := ast.NewParserFromFile(file)
+
+		parser, err := ast.NewParserFromFile(file)
 		if err != nil {
 			log.Panic(err)
 		}
+
+		hurl, err := parser.Parse()
+		if err != nil {
+			log.Panic(err)
+		}
+
+		formatter := format.NewTermFormatter()
+		fmt.Print(formatter.ToText(hurl))
 	}
 }
