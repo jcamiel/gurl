@@ -1,12 +1,13 @@
 package ast
 
 const (
-	space          = '\u0020'
 	tab            = '\u0009'
 	lineFeed       = '\u000a'
 	carriageReturn = '\u000d'
+	space          = '\u0020'
 	quote          = '\u0022'
 	hash           = '\u0023'
+	reverseSolidus = '\u005c'
 )
 
 func Equal(a, b []rune) bool {

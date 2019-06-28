@@ -115,3 +115,35 @@ Bla bla bal`
 	node, _ = p.parseComments()
 	assert.NotNil(t, node)
 }
+
+func TestParseEscapeChar(t *testing.T) {
+
+	var node *EscapeChar
+	var p *Parser
+	var err error
+
+	var tests = []struct {
+		text          string
+		expectedValue string
+		ok            bool
+	}{
+		{`\t`, "\t", true},
+		{`\n`, "\n", true},
+		{`\"`, "\"", true},
+		{`\/`, "/", true},
+		{`\uD83D`, "", false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p = NewParserFromString(test.text, "")
+			node, err = p.parseEscapeChar()
+
+			if test.ok {
+				assert.Equal(t, test.expectedValue, node.Value)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
+	}
+}

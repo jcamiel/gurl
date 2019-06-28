@@ -20,7 +20,7 @@ func (p *TermFormatter) ToText(hurlFile *ast.HurlFile) string {
 	return p.text
 }
 
-func (p *TermFormatter) Visit(node ast.Node) ast.Visitor {
+func (p *TermFormatter) Visit(node ast.Noder) ast.Visitor {
 
 	switch n := node.(type) {
 	case *ast.Eol:

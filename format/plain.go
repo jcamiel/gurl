@@ -19,7 +19,7 @@ func (p *PlainFormatter) ToText(hurlFile *ast.HurlFile) string {
 	return p.text
 }
 
-func (p *PlainFormatter) Visit(node ast.Node) ast.Visitor {
+func (p *PlainFormatter) Visit(node ast.Noder) ast.Visitor {
 
 	switch n := node.(type) {
 	case *ast.Eol:

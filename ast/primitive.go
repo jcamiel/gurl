@@ -169,7 +169,6 @@ func (p *Parser) parseComments() (*Comments, error) {
 		comments,
 	}, nil
 
-
 }
 
 func (p *Parser) tryParseComments() (*Comments, error) {
@@ -184,4 +183,49 @@ func (p *Parser) tryParseComments() (*Comments, error) {
 	}
 
 	return node, nil
+}
+
+func (p *Parser) parseEscapeChar() (*EscapeChar, error) {
+
+	current, line := p.current, p.line
+
+	r, err := p.readRune()
+	if err != nil {
+		return nil, err
+	}
+
+	if r != reverseSolidus {
+		return nil, newSyntaxError(p, "\\ is expected at the beginning of an escape char")
+	}
+
+	r, err = p.readRune()
+	if err != nil {
+		return nil, err
+	}
+
+	if r == 'u' {
+		return nil, newSyntaxError(p, "unicode literal not supported")
+	}
+
+	controls := map[rune]string{
+		'"':  "\"",
+		'\\': "\\",
+		'/':  "/",
+		'b':  "\b",
+		'f':  "\f",
+		'n':  "\n",
+		'r':  "\r",
+		't':  "\t",
+	}
+	value, ok := controls[r]
+	if !ok {
+		return nil, newSyntaxError(p, "control characted is expected")
+	}
+
+	return &EscapeChar{
+		Position{current, line},
+		Position{p.current, p.line},
+		string(p.buffer[current: p.current]),
+		value,
+	}, nil
 }

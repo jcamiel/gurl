@@ -3,10 +3,10 @@ package ast
 import "fmt"
 
 type Visitor interface {
-	Visit(node Node) (w Visitor)
+	Visit(node Noder) (w Visitor)
 }
 
-func Walk(v Visitor, node Node) {
+func Walk(v Visitor, node Noder) {
 
 	if v = v.Visit(node); v == nil {
 		return
@@ -48,7 +48,7 @@ func Walk(v Visitor, node Node) {
 		if n.Whitespaces != nil {
 			Walk(v, n.Whitespaces)
 		}
-	case *Method:
+	case *Spaces, *Method, *Url:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))
