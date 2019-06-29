@@ -10,6 +10,42 @@ type (
 		Node() (Position, Position)
 	}
 
+	Colon struct {
+		Begin Position
+		End   Position
+		Text  string
+	}
+
+	KeyValue struct {
+		Begin    Position
+		End      Position
+		Comments *Comments
+		Key      *Key
+		Spaces0  *Spaces
+		Colon    *Colon
+		Spaces1  *Spaces
+		Value    *Value
+		Spaces2  *Spaces
+		Comment  *Comment
+		Eol      *Eol
+	}
+
+	Key struct {
+		Begin      Position
+		End        Position
+		KeyString  *KeyString
+		JsonString *JsonString
+		Value      string
+	}
+
+	Value struct {
+		Begin      Position
+		End        Position
+		KeyString  *KeyString
+		JsonString *JsonString
+		Value      string
+	}
+
 	JsonString struct {
 		Begin Position
 		End   Position

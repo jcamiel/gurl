@@ -6,7 +6,6 @@ import (
 )
 
 func TestParseWhitespaces(t *testing.T) {
-
 	var p *Parser
 	var node interface{}
 	var err error
@@ -36,7 +35,6 @@ func TestParseWhitespaces(t *testing.T) {
 }
 
 func TestParseOptionalWhitespaces(t *testing.T) {
-
 	text := "\u0020\u0020\nABCDEF"
 	p := NewParserFromString(text, "")
 
@@ -62,7 +60,6 @@ func TestParseWhitespacesFailed(t *testing.T) {
 }
 
 func TestParseComment(t *testing.T) {
-
 	var text string
 	var node *Comment
 	var p *Parser
@@ -79,7 +76,6 @@ func TestParseComment(t *testing.T) {
 }
 
 func TestParseCommentLine(t *testing.T) {
-
 	var text string
 	var node *CommentLine
 	var p *Parser
@@ -97,7 +93,6 @@ func TestParseCommentLine(t *testing.T) {
 }
 
 func TestParseComments(t *testing.T) {
-
 	var text string
 	var node *Comments
 	var p *Parser
@@ -117,7 +112,6 @@ Bla bla bal`
 }
 
 func TestParseJsonString(t *testing.T) {
-
 	var node *JsonString
 	var p *Parser
 	var err error
@@ -151,7 +145,6 @@ func TestParseJsonString(t *testing.T) {
 }
 
 func TestParseKeyString(t *testing.T) {
-
 	var node *KeyString
 	var p *Parser
 	var err error
@@ -169,10 +162,8 @@ func TestParseKeyString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-
 			p = NewParserFromString(test.text, "")
 			node, err = p.parseKeyString()
-
 			if !test.error {
 				assert.Equal(t, test.expectedValue, node.Text)
 			} else {
@@ -180,4 +171,48 @@ func TestParseKeyString(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseKey(t *testing.T) {
+	var node *Key
+	var p *Parser
+	var err error
+
+	var tests = []struct {
+		text          string
+		expectedValue string
+		error            bool
+	}{
+		{text:`key:value`, expectedValue:"key"},
+		{text:`"key":012345678`, expectedValue:"key"},
+		{text:`"key1:key2":012345678`, expectedValue:"key1:key2"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+
+			p = NewParserFromString(test.text, "")
+			node, err = p.parseKey()
+
+			if !test.error {
+				assert.Equal(t, test.expectedValue, node.Value)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
+	}
+}
+
+func TestParseKeyValue(t *testing.T) {
+	var text string
+	var node *KeyValue
+	var p *Parser
+
+	text = `# Some comments on header
+	ABCEDF : "uyfgze fuzy uyezfgezuy " # some comment on eol
+`
+
+	p = NewParserFromString(text, "")
+	node, _ = p.parseKeyValue()
+	assert.NotNil(t, node)
 }
