@@ -6,13 +6,11 @@ import (
 )
 
 func (p *Parser) parseHurlFile() (*HurlFile, error) {
-
 	current, line := p.current, p.line
 
 	whitespaces, _ := p.tryParseWhitespaces()
 
 	var entries []*Entry
-
 	for {
 		e, err := p.parseEntry()
 		if err != nil {
@@ -31,11 +29,9 @@ func (p *Parser) parseHurlFile() (*HurlFile, error) {
 		whitespaces,
 		entries,
 	}, nil
-
 }
 
 func (p *Parser) parseEntry() (*Entry, error) {
-
 	current, line := p.current, p.line
 
 	request, err := p.parseRequest()
@@ -51,7 +47,6 @@ func (p *Parser) parseEntry() (*Entry, error) {
 }
 
 func (p *Parser) parseRequest() (*Request, error) {
-
 	current, line := p.current, p.line
 
 	comments, _ := p.tryParseComments()
@@ -80,6 +75,8 @@ func (p *Parser) parseRequest() (*Request, error) {
 		return nil, err
 	}
 
+	headers, _ := p.tryParseHeaders()
+
 	return &Request{
 		Position{current, line},
 		Position{p.current, p.line},
@@ -90,6 +87,7 @@ func (p *Parser) parseRequest() (*Request, error) {
 		spaces1,
 		comment,
 		eol,
+		headers,
 	}, nil
 }
 
@@ -118,18 +116,15 @@ func (p *Parser) parseMethod() (*Method, error) {
 }
 
 func (p *Parser) parseUrl() (*Url, error) {
-
 	current, line := p.current, p.line
 
 	isGenDelims := func(r rune) bool {
 		return r == ':' || r == '/' || r == '?' || r == '#' || r == '[' || r == ']' || r == '@'
 	}
-
 	isSubDelims := func(r rune) bool {
 		return r == '!' || r == '$' || r == '&' || r == '\'' || r == '(' || r == ')' ||
 			r == '*' || r == '+' || r == ',' || r == ';' || r == '='
 	}
-
 	url, err := p.readRunesWhile(func(r rune) bool {
 		isAlpha := (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
 		isDigit := r >= '0' && r <= '9'
@@ -138,7 +133,6 @@ func (p *Parser) parseUrl() (*Url, error) {
 		isHurlSpecific := r == '{' || r == '}'
 		return isReserved || isUnreserved || isHurlSpecific
 	})
-
 	if err != nil || len(url) == 0 {
 		return nil, newSyntaxError(p, "url is expected")
 	}
@@ -151,13 +145,11 @@ func (p *Parser) parseUrl() (*Url, error) {
 }
 
 func (p *Parser) parseEol() (*Eol, error) {
-
 	current, line := p.current, p.line
 
 	eol, err := p.readRunesWhile(func(r rune) bool {
 		return isNewLine(r)
 	})
-
 	if err != nil && err != io.EOF {
 		return nil, newSyntaxError(p, "newline is expected")
 	}
@@ -167,7 +159,39 @@ func (p *Parser) parseEol() (*Eol, error) {
 		Position{p.current, p.line},
 		string(eol),
 	}, nil
+}
 
+func (p *Parser) parseHeaders() (*Headers, error) {
+	current, line := p.current, p.line
+	headers := make([]*KeyValue, 0)
+	for {
+		h, err := p.tryParseKeyValue()
+		if err != nil {
+			break
+		}
+		headers = append(headers, h)
+	}
+	if len(headers) == 0 {
+		return nil, newSyntaxError(p, "headers are expected")
+	}
+
+	return &Headers {
+		Position{current, line},
+		Position{p.current, p.line},
+		headers,
+	}, nil
+}
+
+func (p *Parser) tryParseHeaders() (*Headers, error) {
+	current, line := p.current, p.line
+
+	node, err := p.parseHeaders()
+	if err != nil {
+		p.current, p.line = current, line
+		return nil, err
+	}
+
+	return node, nil
 }
 
 // Specific debug

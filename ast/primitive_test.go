@@ -190,10 +190,8 @@ func TestParseKey(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-
 			p = NewParserFromString(test.text, "")
 			node, err = p.parseKey()
-
 			if !test.error {
 				assert.Equal(t, test.expectedValue, node.Value)
 			} else {

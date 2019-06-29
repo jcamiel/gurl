@@ -33,12 +33,21 @@ func (p *TermFormatter) Visit(node ast.Noder) ast.Visitor {
 		p.text += n.Text
 		return nil
 	case *ast.Url:
-		p.text += aurora.Green(n.Text).String()
+		p.text += aurora.Yellow(n.Text).String()
 		return nil
 	case *ast.Method:
 		p.text += aurora.Magenta(n.Value).String()
 		return nil
+	case *ast.KeyString:
+		p.text += aurora.Green(n.Text).String()
+		return nil
+	case *ast.JsonString:
+		p.text += aurora.Green(n.Text).String()
+		return nil
 	case *ast.Spaces:
+		p.text += n.Text
+		return nil
+	case *ast.Colon:
 		p.text += n.Text
 		return nil
 	}

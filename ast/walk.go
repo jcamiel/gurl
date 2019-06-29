@@ -13,7 +13,6 @@ func Walk(v Visitor, node Noder) {
 	}
 
 	switch n := node.(type) {
-
 	case *HurlFile:
 		if n.Whitespaces != nil {
 			Walk(v, n.Whitespaces)
@@ -37,7 +36,45 @@ func Walk(v Visitor, node Noder) {
 			Walk(v, n.Comment)
 		}
 		Walk(v, n.Eol)
-
+		Walk(v, n.Headers)
+	case *Headers:
+		for _, h := range n.Headers {
+			Walk(v, h)
+		}
+	case *KeyValue:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.Key)
+		if n.Spaces0 != nil {
+			Walk(v, n.Spaces0)
+		}
+		Walk(v, n.Colon)
+		if n.Spaces1 != nil {
+			Walk(v, n.Spaces1)
+		}
+		Walk(v, n.Value)
+		if n.Spaces2 != nil {
+			Walk(v, n.Spaces2)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
+		Walk(v, n.Eol)
+	case *Key:
+		if n.KeyString != nil {
+			Walk(v, n.KeyString)
+		}
+		if n.JsonString != nil {
+			Walk(v, n.JsonString)
+		}
+	case *Value:
+		if n.KeyString != nil {
+			Walk(v, n.KeyString)
+		}
+		if n.JsonString != nil {
+			Walk(v, n.JsonString)
+		}
 	case *Comments:
 		for _, c := range n.CommentLines {
 			Walk(v, c)
@@ -48,7 +85,7 @@ func Walk(v Visitor, node Noder) {
 		if n.Whitespaces != nil {
 			Walk(v, n.Whitespaces)
 		}
-	case *Spaces, *Method, *Url:
+	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *Colon:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

@@ -55,9 +55,7 @@ func (p *Parser) readRunes(count int) ([]rune, error) {
 }
 
 func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
-
 	begin, end := p.current, p.current
-
 	for {
 		r, err := p.nextRune()
 		if err != nil {

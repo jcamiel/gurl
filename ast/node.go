@@ -10,6 +10,12 @@ type (
 		Node() (Position, Position)
 	}
 
+	Headers struct {
+		Begin   Position
+		End     Position
+		Headers []*KeyValue
+	}
+
 	Colon struct {
 		Begin Position
 		End   Position
@@ -87,6 +93,7 @@ type (
 		Spaces1  *Spaces
 		Comment  *Comment
 		Eol      *Eol
+		Headers  *Headers
 	}
 
 	Method struct {
@@ -180,4 +187,32 @@ func (e *Eol) Node() (Position, Position) {
 
 func (u *Url) Node() (Position, Position) {
 	return u.Begin, u.End
+}
+
+func (h *Headers) Node() (Position, Position) {
+	return h.Begin, h.End
+}
+
+func (k *KeyValue) Node() (Position, Position) {
+	return k.Begin, k.End
+}
+
+func (k *Key) Node() (Position, Position) {
+	return k.Begin, k.End
+}
+
+func (c *Colon) Node() (Position, Position) {
+	return c.Begin, c.End
+}
+
+func (v *Value) Node() (Position, Position) {
+	return v.Begin, v.End
+}
+
+func (k *KeyString) Node() (Position, Position) {
+	return k.Begin, k.End
+}
+
+func (j *JsonString) Node() (Position, Position) {
+	return j.Begin, j.End
 }

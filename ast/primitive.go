@@ -241,7 +241,7 @@ func (p *Parser) parseKeyString() (*KeyString, error) {
 	current, line := p.current, p.line
 
 	key, err := p.readRunesWhile(func(r rune) bool {
-		return !isSpace(r) && !isNewLine(r) && r != ':' && r != '"'
+		return !isNewLine(r) && r != ':' && r != '"' && r != '#'
 	})
 	if err != nil || len(key) == 0 {
 		return nil, newSyntaxError(p, "char is expected at key-string beginning")
@@ -389,4 +389,16 @@ func (p *Parser) parseKeyValue() (*KeyValue, error) {
 		comment,
 		eol,
 	}, nil
+}
+
+func (p *Parser) tryParseKeyValue() (*KeyValue, error) {
+	current, line := p.current, p.line
+
+	node, err := p.parseKeyValue()
+	if err != nil {
+		p.current, p.line = current, line
+		return nil, err
+	}
+
+	return node, nil
 }
