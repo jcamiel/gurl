@@ -17,6 +17,12 @@ type (
 		Value string
 	}
 
+	KeyString struct {
+		Begin Position
+		End   Position
+		Text  string
+	}
+
 	Eol struct {
 		Begin Position
 		End   Position

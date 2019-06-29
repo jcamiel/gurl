@@ -264,3 +264,22 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 
 
 }
+
+func (p *Parser) parseKeyString() (*KeyString, error) {
+
+	current, line := p.current, p.line
+
+	key, err := p.readRunesWhile(func(r rune) bool {
+		return !isSpace(r) && !isNewLine(r) && r != ':'
+	})
+
+	if err != nil || len(key) == 0 {
+		return nil, newSyntaxError(p, "char is expected at key-string beginning")
+	}
+
+	return &KeyString{
+		Position{current, line},
+		Position{p.current, p.line},
+		string(key),
+	}, nil
+}

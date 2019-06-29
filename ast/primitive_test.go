@@ -149,3 +149,35 @@ func TestParseJsonString(t *testing.T) {
 		})
 	}
 }
+
+func TestParseKeyString(t *testing.T) {
+
+	var node *KeyString
+	var p *Parser
+	var err error
+
+	var tests = []struct {
+		text          string
+		expectedValue string
+		error            bool
+	}{
+		{text:`abcedf`, expectedValue:"abcedf"},
+		{text:`key:value`, expectedValue:"key"},
+		{text:`fruit : banana"`, expectedValue:"fruit"},
+		{text:`: kiwi"`, error:true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+
+			p = NewParserFromString(test.text, "")
+			node, err = p.parseKeyString()
+
+			if !test.error {
+				assert.Equal(t, test.expectedValue, node.Text)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
+	}
+}
