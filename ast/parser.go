@@ -36,7 +36,7 @@ func (p *Parser) readRune() (rune, error) {
 		return 0, err
 	}
 	p.current += 1
-	if r == lineFeed {
+	if r == '\n' {
 		p.line += 1
 	}
 	return r, nil
@@ -94,7 +94,7 @@ func (p *Parser) isNext(text string) bool {
 	if err != nil {
 		return false
 	}
-	return Equal(runes, next)
+	return equal(runes, next)
 }
 
 func newSyntaxError(p *Parser, text string) error {

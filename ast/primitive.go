@@ -5,11 +5,11 @@ func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 	current, line := p.current, p.line
 
 	whitespaces, err := p.readRunesWhile(func(r rune) bool {
-		return IsSpace(r) || IsNewline(r)
+		return isSpace(r) || isNewLine(r)
 	})
 
 	if err != nil || len(whitespaces) == 0 {
-		return nil, newSyntaxError(p, "space, tab or newline is expected")
+		return nil, newSyntaxError(p, "space, tab or newline is expected at whitespaces beginning")
 	}
 
 	return &Whitespaces{
@@ -38,11 +38,11 @@ func (p *Parser) parseSpaces() (*Spaces, error) {
 	current, line := p.current, p.line
 
 	spaces, err := p.readRunesWhile(func(r rune) bool {
-		return IsSpace(r)
+		return isSpace(r)
 	})
 
 	if err != nil || len(spaces) == 0 {
-		return nil, newSyntaxError(p, "space or tab is expected")
+		return nil, newSyntaxError(p, "space or tab is expected at spaces beginning")
 	}
 
 	return &Spaces{
@@ -76,11 +76,11 @@ func (p *Parser) parseComment() (*Comment, error) {
 	}
 
 	if r != hash {
-		return nil, newSyntaxError(p, "# is expected at the beginning of a comment")
+		return nil, newSyntaxError(p, "# is expected at comment beginning")
 	}
 
 	comment, err := p.readRunesWhile(func(r rune) bool {
-		return !IsNewline(r)
+		return !isNewLine(r)
 	})
 
 	return &Comment{
@@ -185,7 +185,9 @@ func (p *Parser) tryParseComments() (*Comments, error) {
 	return node, nil
 }
 
-func (p *Parser) parseEscapeChar() (*EscapeChar, error) {
+func (p *Parser) parseJsonString() (*JsonString, error) {
+
+	value := make([]rune,0)
 
 	current, line := p.current, p.line
 
@@ -194,38 +196,71 @@ func (p *Parser) parseEscapeChar() (*EscapeChar, error) {
 		return nil, err
 	}
 
-	if r != reverseSolidus {
-		return nil, newSyntaxError(p, "\\ is expected at the beginning of an escape char")
+	if r != '"' {
+		return nil, newSyntaxError(p, "\" is expected at json-string beginning")
 	}
 
-	r, err = p.readRune()
-	if err != nil {
-		return nil, err
+	for {
+		chars, err := p.readRunesWhile(func(r rune) bool {
+			return r != '"' && r != '\\' && !isControlCharacter(r)
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		value = append(value, chars...)
+
+		r, err = p.readRune()
+		if err != nil {
+			return nil, err
+		}
+
+		if isControlCharacter(r) {
+			return nil, newSyntaxError(p, "control character not allowed in json-string")
+		}
+
+		if r == '"' {
+			break
+		}
+
+		// Parsing of escaped char
+		if r == '\\' {
+			r, err = p.readRune()
+			if err != nil {
+				return nil, err
+			}
+
+			if r == 'u' {
+				return nil, newSyntaxError(p, "unicode literal not supported")
+			}
+
+			controls := map[rune]rune{
+				'"':  '"',
+				'\\': '\\',
+				'/':  '/',
+				'b':  '\b',
+				'f':  '\f',
+				'n':  '\n',
+				'r':  '\r',
+				't':  '\t',
+			}
+
+			c, ok := controls[r]
+			if !ok {
+				return nil, newSyntaxError(p, "control characted is expected")
+			}
+			value = append(value, c)
+		}
 	}
 
-	if r == 'u' {
-		return nil, newSyntaxError(p, "unicode literal not supported")
-	}
-
-	controls := map[rune]string{
-		'"':  "\"",
-		'\\': "\\",
-		'/':  "/",
-		'b':  "\b",
-		'f':  "\f",
-		'n':  "\n",
-		'r':  "\r",
-		't':  "\t",
-	}
-	value, ok := controls[r]
-	if !ok {
-		return nil, newSyntaxError(p, "control characted is expected")
-	}
-
-	return &EscapeChar{
+	return &JsonString{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(p.buffer[current: p.current]),
-		value,
+		string(value),
 	}, nil
+
+
+
 }

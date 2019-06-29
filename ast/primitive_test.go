@@ -116,30 +116,32 @@ Bla bla bal`
 	assert.NotNil(t, node)
 }
 
-func TestParseEscapeChar(t *testing.T) {
+func TestParseJsonString(t *testing.T) {
 
-	var node *EscapeChar
+	var node *JsonString
 	var p *Parser
 	var err error
 
 	var tests = []struct {
 		text          string
 		expectedValue string
-		ok            bool
+		error            bool
 	}{
-		{`\t`, "\t", true},
-		{`\n`, "\n", true},
-		{`\"`, "\"", true},
-		{`\/`, "/", true},
-		{`\uD83D`, "", false},
+		{text:`"abcdef 012345"`, expectedValue:"abcdef 012345"},
+		{text: `"abc\ndef"`, expectedValue: "abc\ndef"},
+		{text: `"abc\"def"`, expectedValue: "abc\"def"},
+		{text: `abc`, error: true},
+		{text: `"abc`, error: true},
+		{text: `"abc\ud83d\udca9"`, error: true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node, err = p.parseEscapeChar()
 
-			if test.ok {
+			p = NewParserFromString(test.text, "")
+			node, err = p.parseJsonString()
+
+			if !test.error {
 				assert.Equal(t, test.expectedValue, node.Value)
 			} else {
 				assert.NotNil(t, err)

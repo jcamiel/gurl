@@ -121,14 +121,20 @@ func (p *Parser) parseUrl() (*Url, error) {
 
 	current, line := p.current, p.line
 
-	genDelims := []rune{':', '/', '?', '#', '[', ']', '@'}
-	subDelims := []rune{'!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='}
+	isGenDelims := func(r rune) bool {
+		return r == ':' || r == '/' || r == '?' || r == '#' || r == '[' || r == ']' || r == '@'
+	}
+
+	isSubDelims := func(r rune) bool {
+		return r == '!' || r == '$' || r == '&' || r == '\'' || r == '(' || r == ')' ||
+			r == '*' || r == '+' || r == ',' || r == ';' || r == '='
+	}
 
 	url, err := p.readRunesWhile(func(r rune) bool {
 		isAlpha := (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
 		isDigit := r >= '0' && r <= '9'
 		isUnreserved := isAlpha || isDigit || r == '-' || r == '.' || r == '_' || r == '~'
-		isReserved := RuneInSlice(r, genDelims) || RuneInSlice(r, subDelims)
+		isReserved := isGenDelims(r) || isSubDelims(r)
 		isHurlSpecific := r == '{' || r == '}'
 		return isReserved || isUnreserved || isHurlSpecific
 	})
@@ -149,7 +155,7 @@ func (p *Parser) parseEol() (*Eol, error) {
 	current, line := p.current, p.line
 
 	eol, err := p.readRunesWhile(func(r rune) bool {
-		return IsNewline(r)
+		return isNewLine(r)
 	})
 
 	if err != nil && err != io.EOF {
@@ -164,11 +170,10 @@ func (p *Parser) parseEol() (*Eol, error) {
 
 }
 
-
 // Specific debug
-func (p *Parser) skipToNextEol()  {
+func (p *Parser) skipToNextEol() {
 	_, _ = p.readRunesWhile(func(r rune) bool {
-		return !IsNewline(r)
+		return !isNewLine(r)
 	})
 
 	_, _ = p.parseWhitespaces()

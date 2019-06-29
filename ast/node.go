@@ -10,11 +10,11 @@ type (
 		Node() (Position, Position)
 	}
 
-	EscapeChar struct {
-		Begin   Position
-		End     Position
-		Text    string
-		Value	string
+	JsonString struct {
+		Begin Position
+		End   Position
+		Text  string
+		Value string
 	}
 
 	Eol struct {

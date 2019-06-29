@@ -5,12 +5,12 @@ const (
 	lineFeed       = '\u000a'
 	carriageReturn = '\u000d'
 	space          = '\u0020'
-	quote          = '\u0022'
+	quotationMark  = '\u0022'
 	hash           = '\u0023'
 	reverseSolidus = '\u005c'
 )
 
-func Equal(a, b []rune) bool {
+func equal(a, b []rune) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -22,19 +22,14 @@ func Equal(a, b []rune) bool {
 	return true
 }
 
-func RuneInSlice(a rune, list []rune) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
+func isNewLine(r rune) bool {
+	return r == '\n' || r == '\r'
 }
 
-func IsNewline(r rune) bool {
-	return r == lineFeed || r == carriageReturn
+func isSpace(r rune) bool {
+	return r == ' ' || r == '\t'
 }
 
-func IsSpace(r rune) bool {
-	return r == space || r == tab
+func isControlCharacter(r rune) bool {
+	return r == '\b' || r == '\f' || r == '\n' || r == '\r' || r == '\t'
 }
