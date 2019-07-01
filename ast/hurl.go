@@ -92,6 +92,7 @@ func (p *Parser) parseRequest() (*Request, error) {
 }
 
 func (p *Parser) parseMethod() (*Method, error) {
+	current, line := p.current, p.line
 	methods := []string{
 		"GET",
 		"HEAD",
@@ -104,12 +105,13 @@ func (p *Parser) parseMethod() (*Method, error) {
 		"PATCH",
 	}
 	for _, method := range methods {
-		if p.isNext(method) {
-			count := len(method)
-			begin := Position{p.current, p.line}
-			end := Position{p.current + count, p.line}
-			_, _ = p.readRunes(count)
-			return &Method{begin, end, method}, nil
+
+		if p.tryParseString(method) {
+			return &Method{
+				Position{current, line},
+				Position{p.current, p.line},
+				method,
+			}, nil
 		}
 	}
 	return nil, newSyntaxError(p, fmt.Sprintf("method %v is expected", methods))

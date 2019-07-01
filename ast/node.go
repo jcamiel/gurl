@@ -143,6 +143,12 @@ type (
 		Eol         *Eol
 		Whitespaces *Whitespaces
 	}
+
+	SectionHeader struct {
+		Begin Position
+		End   Position
+		Text  string
+	}
 )
 
 func (h *HurlFile) Node() (Position, Position) {

@@ -86,15 +86,6 @@ func (p *Parser) nextRunes(count int) ([]rune, error) {
 	return p.buffer[p.current:end], nil
 }
 
-func (p *Parser) isNext(text string) bool {
-	runes := []rune(text)
-	next, err := p.nextRunes(len(runes))
-	if err != nil {
-		return false
-	}
-	return equal(runes, next)
-}
-
 func newSyntaxError(p *Parser, text string) error {
 	pos := Position{p.current, p.line}
 	return &SyntaxError{text, pos}

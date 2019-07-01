@@ -1,5 +1,17 @@
 package ast
 
+
+func (p *Parser)tryParseString(s string) bool {
+	current, line := p.current, p.line
+	runes := []rune(s)
+	next, err := p.readRunes(len(runes))
+	if err != nil || !equal(runes, next) {
+		p.current, p.line = current, line
+		return false
+	}
+	return true
+}
+
 func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 	current, line := p.current, p.line
 
@@ -402,3 +414,4 @@ func (p *Parser) tryParseKeyValue() (*KeyValue, error) {
 
 	return node, nil
 }
+
