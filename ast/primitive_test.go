@@ -214,3 +214,34 @@ func TestParseKeyValue(t *testing.T) {
 	node, _ = p.parseKeyValue()
 	assert.NotNil(t, node)
 }
+
+func TestParseValueString(t *testing.T) {
+	var node *ValueString
+	var p *Parser
+	var err error
+
+	var tests = []struct {
+		text          string
+		expectedValue string
+		error            bool
+	}{
+		{text:`abcdef`, expectedValue:"abcdef"},
+		{text:`abcdef   `, expectedValue:"abcdef"},
+		{text:`abcdef 0123456`, expectedValue:"abcdef 0123456"},
+		{text:`abcdef#0123456`, expectedValue:"abcdef"},
+		{text:`abcdef    #0123456`, expectedValue:"abcdef"},
+		{text:`012 345 678   `, expectedValue:"012 345 678"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p = NewParserFromString(test.text, "")
+			node, err = p.parseValueString()
+			if !test.error {
+				assert.Equal(t, test.expectedValue, node.Text)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
+	}
+}

@@ -30,6 +30,10 @@ func isSpace(r rune) bool {
 	return r == ' ' || r == '\t'
 }
 
+func isWhitespace(r rune) bool {
+	return isNewLine(r) || isSpace(r)
+}
+
 func isControlCharacter(r rune) bool {
 	return r == '\b' || r == '\f' || r == '\n' || r == '\r' || r == '\t'
 }

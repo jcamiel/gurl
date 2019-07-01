@@ -69,8 +69,8 @@ func Walk(v Visitor, node Noder) {
 			Walk(v, n.JsonString)
 		}
 	case *Value:
-		if n.KeyString != nil {
-			Walk(v, n.KeyString)
+		if n.ValueString != nil {
+			Walk(v, n.ValueString)
 		}
 		if n.JsonString != nil {
 			Walk(v, n.JsonString)
@@ -85,7 +85,7 @@ func Walk(v Visitor, node Noder) {
 		if n.Whitespaces != nil {
 			Walk(v, n.Whitespaces)
 		}
-	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *Colon:
+	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *ValueString, *Colon:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

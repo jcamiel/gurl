@@ -16,7 +16,7 @@ func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 	current, line := p.current, p.line
 
 	whitespaces, err := p.readRunesWhile(func(r rune) bool {
-		return isSpace(r) || isNewLine(r)
+		return isWhitespace(r)
 	})
 	if err != nil || len(whitespaces) == 0 {
 		return nil, newSyntaxError(p, "space, tab or newline is expected at whitespaces beginning")
@@ -253,7 +253,7 @@ func (p *Parser) parseKeyString() (*KeyString, error) {
 	current, line := p.current, p.line
 
 	key, err := p.readRunesWhile(func(r rune) bool {
-		return !isNewLine(r) && r != ':' && r != '"' && r != '#'
+		return !isWhitespace(r) && r != ':' && r != '"' && r != '#'
 	})
 	if err != nil || len(key) == 0 {
 		return nil, newSyntaxError(p, "char is expected at key-string beginning")
@@ -312,10 +312,10 @@ func (p *Parser) parseKey() (*Key, error) {
 func (p *Parser) parseValue() (*Value, error) {
 	current, line := p.current, p.line
 
-	var keyString *KeyString
+	var valueString *ValueString
 	var jsonString *JsonString
 
-	keyString, err := p.tryParseKeyString()
+	valueString, err := p.tryParseValueString()
 	if err != nil {
 		jsonString, err = p.parseJsonString()
 		if err != nil {
@@ -324,8 +324,8 @@ func (p *Parser) parseValue() (*Value, error) {
 	}
 
 	var value string
-	if keyString != nil {
-		value = keyString.Text
+	if valueString != nil {
+		value = valueString.Text
 	}
 	if jsonString != nil {
 		value = jsonString.Value
@@ -334,7 +334,7 @@ func (p *Parser) parseValue() (*Value, error) {
 	return &Value{
 		Position{current, line},
 		Position{p.current, p.line},
-		keyString,
+		valueString,
 		jsonString,
 		value,
 	},nil
@@ -415,3 +415,61 @@ func (p *Parser) tryParseKeyValue() (*KeyValue, error) {
 	return node, nil
 }
 
+func (p *Parser) parseValueString() (*ValueString, error) {
+	current, line := p.current, p.line
+
+	value := make([]rune, 0)
+	for {
+		v, err := p.readRunesWhile(func(r rune) bool {
+			return !isWhitespace(r) && r != '#'
+		})
+		if err != nil {
+			break
+		}
+		value = append(value, v...)
+		n, err := p.nextRune()
+		if err != nil || isNewLine(n) || n == '#' {
+			break
+		}
+		if !isSpace(n) {
+			r, _ := p.readRune()
+			value = append(value, r)
+			continue
+		}
+
+		// if we have trailing spaces, we must break
+		s, err := p.readRunesWhile(func(r rune) bool {
+			return isSpace(r)
+		})
+		if err != nil {
+			break
+		}
+		n, err = p.nextRune()
+		if err != nil || isNewLine(n) || n == '#' {
+			break
+		}
+		value = append(value, s...)
+	}
+
+	if len(value) == 0 {
+		return nil, newSyntaxError(p, "# or whitespaces is forbidden at value-string beginning")
+	}
+	return &ValueString{
+		Position{current, line},
+		Position{p.current, p.line},
+		string(value),
+	}, nil
+
+}
+
+func (p *Parser) tryParseValueString() (*ValueString, error) {
+	current, line := p.current, p.line
+
+	node, err := p.parseValueString()
+	if err != nil {
+		p.current, p.line = current, line
+		return nil, err
+	}
+
+	return node, nil
+}

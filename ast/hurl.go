@@ -199,7 +199,7 @@ func (p *Parser) tryParseHeaders() (*Headers, error) {
 // Specific debug
 func (p *Parser) skipToNextEol() {
 	_, _ = p.readRunesWhile(func(r rune) bool {
-		return !isNewLine(r)
+		return !isWhitespace(r)
 	})
 
 	_, _ = p.parseWhitespaces()

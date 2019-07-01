@@ -45,11 +45,11 @@ type (
 	}
 
 	Value struct {
-		Begin      Position
-		End        Position
-		KeyString  *KeyString
-		JsonString *JsonString
-		Value      string
+		Begin       Position
+		End         Position
+		ValueString *ValueString
+		JsonString  *JsonString
+		Value       string
 	}
 
 	JsonString struct {
@@ -60,6 +60,12 @@ type (
 	}
 
 	KeyString struct {
+		Begin Position
+		End   Position
+		Text  string
+	}
+
+	ValueString struct {
 		Begin Position
 		End   Position
 		Text  string
@@ -221,4 +227,8 @@ func (k *KeyString) Node() (Position, Position) {
 
 func (j *JsonString) Node() (Position, Position) {
 	return j.Begin, j.End
+}
+
+func (v *ValueString) Node() (Position, Position) {
+	return v.Begin, v.End
 }
