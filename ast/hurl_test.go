@@ -34,7 +34,7 @@ func TestParseRequest(t *testing.T) {
 	var tests = []struct {
 		text string
 	}{
-/*		{"GET http://www.example.org"},
+		/*{"GET http://www.example.org"},
 		{"GET\u0020http://www.example.org"},
 		{"GET http://www.example.org\t# Some comment"},
 		{"GET http://www.example.org/foo.html#bar # Some comment"},
@@ -44,11 +44,11 @@ func TestParseRequest(t *testing.T) {
 `},*/
 		{`GET {{orange_url}}/demenagement/planifier
 User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1
-X-WASSUP-AOL: 10
-X-WASSUP-UIT: 1
-X-WASSUP-ULV: 0x7125a9223bae00010000073f
-X-WASSUP-DSN: STANY AISSAOUI
-X-WASSUP-SAI: 115651101
+	X-WASSUP-AOL: 10
+	X-WASSUP-UIT: 1
+	X-WASSUP-ULV: 0x7125a9223bae00010000073f
+	X-WASSUP-DSN: STANY AISSAOUI
+	X-WASSUP-SAI: 115651101
 `},
 	}
 
@@ -123,5 +123,20 @@ key2 : value2
 key3 : value3`
 	p = NewParserFromString(text, "")
 	node, _ = p.parseHeaders()
+	assert.NotNil(t, node)
+}
+
+func TestCookies( t *testing.T) {
+	var text string
+	var node *Cookies
+	var p *Parser
+
+	text = `[Cookies]
+	cookieA : valueA # Some comment on value A
+	cookieB : valueB
+	cookieC : valueC
+`
+	p = NewParserFromString(text, "")
+	node, _ = p.parseCookies()
 	assert.NotNil(t, node)
 }

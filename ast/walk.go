@@ -36,11 +36,48 @@ func Walk(v Visitor, node Noder) {
 			Walk(v, n.Comment)
 		}
 		Walk(v, n.Eol)
-		Walk(v, n.Headers)
+		if n.Headers != nil {
+			Walk(v, n.Headers)
+		}
+		if n.Cookies != nil {
+			Walk(v, n.Cookies)
+		}
 	case *Headers:
 		for _, h := range n.Headers {
 			Walk(v, h)
 		}
+	case *Cookies:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.SectionHeader)
+		if n.Spaces != nil {
+			Walk(v, n.Spaces)
+		}
+		Walk(v, n.Eol)
+		for _, c := range n.Cookies {
+			Walk(v, c)
+		}
+	case *Cookie:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.Key)
+		if n.Spaces0 != nil {
+			Walk(v, n.Spaces0)
+		}
+		Walk(v, n.Colon)
+		if n.Spaces1 != nil {
+			Walk(v, n.Spaces1)
+		}
+		Walk(v, n.CookieValue)
+		if n.Spaces2 != nil {
+			Walk(v, n.Spaces2)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
+		Walk(v, n.Eol)
 	case *KeyValue:
 		if n.Comments != nil {
 			Walk(v, n.Comments)
@@ -85,7 +122,8 @@ func Walk(v Visitor, node Noder) {
 		if n.Whitespaces != nil {
 			Walk(v, n.Whitespaces)
 		}
-	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *ValueString, *Colon:
+	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *JsonString, *ValueString, *Colon,
+		*SectionHeader, *CookieValue:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

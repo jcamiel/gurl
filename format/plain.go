@@ -23,19 +23,19 @@ func (p *PlainFormatter) Visit(node ast.Noder) ast.Visitor {
 
 	switch n := node.(type) {
 	case *ast.Eol:
-		p.text += n.Text
+		p.text += n.Value
 		return nil
 	case *ast.Comment:
-		p.text += n.Text
+		p.text += n.Value
 		return nil
 	case *ast.Whitespaces:
-		p.text += n.Text
+		p.text += n.Value
 		return nil
 	case *ast.Method:
 		p.text += n.Value
 		return nil
 	case *ast.Spaces:
-		p.text += n.Text
+		p.text += n.Value
 		return nil
 	}
 	return p

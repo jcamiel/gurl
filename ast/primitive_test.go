@@ -165,7 +165,7 @@ func TestParseKeyString(t *testing.T) {
 			p = NewParserFromString(test.text, "")
 			node, err = p.parseKeyString()
 			if !test.error {
-				assert.Equal(t, test.expectedValue, node.Text)
+				assert.Equal(t, test.expectedValue, node.Value)
 			} else {
 				assert.NotNil(t, err)
 			}
@@ -206,10 +206,10 @@ func TestParseKeyValue(t *testing.T) {
 	var node *KeyValue
 	var p *Parser
 
-	text = `# Some comments on header
+/*	text = `# Some comments on header
 	ABCEDF : "uyfgze fuzy uyezfgezuy " # some comment on eol
-`
-
+`*/
+	text = "X-WASSUP-ULV: 0x400007b220d105f228acb76e   # identifiant Wassup oidval"
 	p = NewParserFromString(text, "")
 	node, _ = p.parseKeyValue()
 	assert.NotNil(t, node)
@@ -238,10 +238,21 @@ func TestParseValueString(t *testing.T) {
 			p = NewParserFromString(test.text, "")
 			node, err = p.parseValueString()
 			if !test.error {
-				assert.Equal(t, test.expectedValue, node.Text)
+				assert.Equal(t, test.expectedValue, node.Value)
 			} else {
 				assert.NotNil(t, err)
 			}
 		})
 	}
+}
+
+func TestParseSectionHeader(t *testing.T) {
+	var text string
+	var node *SectionHeader
+	var p *Parser
+
+	text = "Cookies"
+	p = NewParserFromString(text, "")
+	node, _ = p.parseSectionHeader(text)
+	assert.NotNil(t, node)
 }

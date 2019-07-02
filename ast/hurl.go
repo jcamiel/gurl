@@ -9,7 +9,6 @@ func (p *Parser) parseHurlFile() (*HurlFile, error) {
 	current, line := p.current, p.line
 
 	whitespaces, _ := p.tryParseWhitespaces()
-
 	var entries []*Entry
 	for {
 		e, err := p.parseEntry()
@@ -50,32 +49,26 @@ func (p *Parser) parseRequest() (*Request, error) {
 	current, line := p.current, p.line
 
 	comments, _ := p.tryParseComments()
-
 	method, err := p.parseMethod()
 	if err != nil {
 		return nil, err
 	}
-
 	spaces0, err := p.parseSpaces()
 	if err != nil {
 		return nil, err
 	}
-
 	url, err := p.parseUrl()
 	if err != nil {
 		return nil, err
 	}
-
 	spaces1, _ := p.tryParseSpaces()
-
 	comment, _ := p.tryParseComment()
-
 	eol, err := p.parseEol()
 	if err != nil {
 		return nil, err
 	}
-
 	headers, _ := p.tryParseHeaders()
+	cookies, _ := p.tryParseCookies()
 
 	return &Request{
 		Position{current, line},
@@ -88,11 +81,13 @@ func (p *Parser) parseRequest() (*Request, error) {
 		comment,
 		eol,
 		headers,
+		cookies,
 	}, nil
 }
 
 func (p *Parser) parseMethod() (*Method, error) {
 	current, line := p.current, p.line
+
 	methods := []string{
 		"GET",
 		"HEAD",
@@ -105,7 +100,6 @@ func (p *Parser) parseMethod() (*Method, error) {
 		"PATCH",
 	}
 	for _, method := range methods {
-
 		if p.tryParseString(method) {
 			return &Method{
 				Position{current, line},
@@ -156,15 +150,25 @@ func (p *Parser) parseEol() (*Eol, error) {
 		return nil, newSyntaxError(p, "newline is expected")
 	}
 
+	if err != io.EOF {
+		if len(eol) == 0 {
+			return nil, newSyntaxError(p, "newline is expected")
+		}
+		_, _ = p.readRunesWhile(func(r rune) bool {
+			return isWhitespace(r)
+		})
+	}
+
 	return &Eol{
 		Position{current, line},
 		Position{p.current, p.line},
-		string(eol),
+		string(p.buffer[current:p.current]),
 	}, nil
 }
 
 func (p *Parser) parseHeaders() (*Headers, error) {
 	current, line := p.current, p.line
+
 	headers := make([]*KeyValue, 0)
 	for {
 		h, err := p.tryParseKeyValue()
@@ -177,23 +181,106 @@ func (p *Parser) parseHeaders() (*Headers, error) {
 		return nil, newSyntaxError(p, "headers are expected")
 	}
 
-	return &Headers {
+	return &Headers{
 		Position{current, line},
 		Position{p.current, p.line},
 		headers,
 	}, nil
 }
 
-func (p *Parser) tryParseHeaders() (*Headers, error) {
+func (p *Parser) parseCookieValue() (*CookieValue, error) {
 	current, line := p.current, p.line
 
-	node, err := p.parseHeaders()
+	cookie, err := p.readRunesWhile(func(r rune) bool {
+		return (r >= 'A' && r <= 'Z') ||
+			(r >= 'a' && r <= 'z') ||
+			(r >= '0' && r <= '9') ||
+			r == ':' ||
+			r == '/' ||
+			r == '%'
+	})
 	if err != nil {
-		p.current, p.line = current, line
+		return nil, newSyntaxError(p, "[A-Za-z0-9:/%] char is expected for cookie-value")
+	}
+
+	return &CookieValue{
+		Position{current, line},
+		Position{p.current, p.line},
+		string(cookie),
+	}, nil
+}
+
+func (p *Parser) parseCookie() (*Cookie, error) {
+	current, line := p.current, p.line
+
+	comments, _ := p.tryParseComments()
+	key, err := p.parseKey()
+	if err != nil {
+		return nil, err
+	}
+	spaces0, _ := p.tryParseSpaces()
+	colon, err := p.parseColon()
+	if err != nil {
+		return nil, err
+	}
+	spaces1, _ := p.tryParseSpaces()
+	cookieValue, err := p.parseCookieValue()
+	if err != nil {
+		return nil, err
+	}
+	spaces2, _ := p.tryParseSpaces()
+	comment, _ := p.tryParseComment()
+	eol, err := p.parseEol()
+	if err != nil {
 		return nil, err
 	}
 
-	return node, nil
+	return &Cookie{
+		Position{current, line},
+		Position{p.current, p.line},
+		comments,
+		key,
+		spaces0,
+		colon,
+		spaces1,
+		cookieValue,
+		spaces2,
+		comment,
+		eol,
+	}, nil
+}
+
+func (p *Parser) parseCookies() (*Cookies, error) {
+	current, line := p.current, p.line
+
+	comments, _ := p.tryParseComments()
+	section, err := p.parseSectionHeader("Cookies")
+	if err != nil {
+		return nil, err
+	}
+	spaces, _ := p.tryParseSpaces()
+	eol, err := p.parseEol()
+	if err != nil {
+		return nil, err
+	}
+	cookies := make([]*Cookie, 0)
+	for {
+		c, err := p.tryParseCookie()
+		if err != nil {
+			break
+		}
+		cookies = append(cookies, c)
+	}
+
+	return &Cookies{
+		Position{current, line},
+		Position{p.current, p.line},
+		comments,
+		section,
+		spaces,
+		eol,
+		cookies,
+	}, nil
 }
 
 // Specific debug

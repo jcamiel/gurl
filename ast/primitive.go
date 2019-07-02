@@ -1,16 +1,6 @@
 package ast
 
-
-func (p *Parser)tryParseString(s string) bool {
-	current, line := p.current, p.line
-	runes := []rune(s)
-	next, err := p.readRunes(len(runes))
-	if err != nil || !equal(runes, next) {
-		p.current, p.line = current, line
-		return false
-	}
-	return true
-}
+import "fmt"
 
 func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 	current, line := p.current, p.line
@@ -27,18 +17,6 @@ func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
 		Position{p.current, p.line},
 		string(whitespaces),
 	}, nil
-}
-
-func (p *Parser) tryParseWhitespaces() (*Whitespaces, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseWhitespaces()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
 }
 
 func (p *Parser) parseSpaces() (*Spaces, error) {
@@ -58,18 +36,6 @@ func (p *Parser) parseSpaces() (*Spaces, error) {
 	}, nil
 }
 
-func (p *Parser) tryParseSpaces() (*Spaces, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseSpaces()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
-}
-
 func (p *Parser) parseComment() (*Comment, error) {
 	current, line := p.current, p.line
 
@@ -77,11 +43,9 @@ func (p *Parser) parseComment() (*Comment, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if r != hash {
 		return nil, newSyntaxError(p, "# is expected at comment beginning")
 	}
-
 	comment, err := p.readRunesWhile(func(r rune) bool {
 		return !isNewLine(r)
 	})
@@ -93,18 +57,6 @@ func (p *Parser) parseComment() (*Comment, error) {
 	}, nil
 }
 
-func (p *Parser) tryParseComment() (*Comment, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseComment()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
-}
-
 func (p *Parser) parseCommentLine() (*CommentLine, error) {
 	current, line := p.current, p.line
 
@@ -112,12 +64,10 @@ func (p *Parser) parseCommentLine() (*CommentLine, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	eol, err := p.parseEol()
 	if err != nil {
 		return nil, err
 	}
-
 	whitespaces, _ := p.tryParseWhitespaces()
 
 	return &CommentLine{
@@ -130,29 +80,17 @@ func (p *Parser) parseCommentLine() (*CommentLine, error) {
 
 }
 
-func (p *Parser) tryParseCommentLine() (*CommentLine, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseCommentLine()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
-}
-
 func (p *Parser) parseComments() (*Comments, error) {
-
 	current, line := p.current, p.line
 
 	var comments []*CommentLine
 	for {
 		c, err := p.tryParseCommentLine()
-		if err != nil { break }
+		if err != nil {
+			break
+		}
 		comments = append(comments, c)
 	}
-
 	if len(comments) == 0 {
 		return nil, newSyntaxError(p, "comments is expected")
 	}
@@ -165,18 +103,6 @@ func (p *Parser) parseComments() (*Comments, error) {
 
 }
 
-func (p *Parser) tryParseComments() (*Comments, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseComments()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
-}
-
 func (p *Parser) parseJsonString() (*JsonString, error) {
 
 	current, line := p.current, p.line
@@ -185,12 +111,10 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if r != '"' {
 		return nil, newSyntaxError(p, "\" is expected at json-string beginning")
 	}
-
-	value := make([]rune,0)
+	value := make([]rune, 0)
 	for {
 		chars, err := p.readRunesWhile(func(r rune) bool {
 			return r != '"' && r != '\\' && !isControlCharacter(r)
@@ -204,14 +128,12 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		if isControlCharacter(r) {
 			return nil, newSyntaxError(p, "control character not allowed in json-string")
 		}
 		if r == '"' {
 			break
 		}
-
 		// Parsing of escaped char
 		if r == '\\' {
 			r, err = p.readRune()
@@ -244,7 +166,7 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 	return &JsonString{
 		Position{current, line},
 		Position{p.current, p.line},
-		string(p.buffer[current: p.current]),
+		string(p.buffer[current:p.current]),
 		string(value),
 	}, nil
 }
@@ -266,18 +188,6 @@ func (p *Parser) parseKeyString() (*KeyString, error) {
 	}, nil
 }
 
-func (p *Parser) tryParseKeyString() (*KeyString, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseKeyString()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
-}
-
 func (p *Parser) parseKey() (*Key, error) {
 	current, line := p.current, p.line
 
@@ -294,7 +204,7 @@ func (p *Parser) parseKey() (*Key, error) {
 
 	var value string
 	if keyString != nil {
-		value = keyString.Text
+		value = keyString.Value
 	}
 	if jsonString != nil {
 		value = jsonString.Value
@@ -306,7 +216,7 @@ func (p *Parser) parseKey() (*Key, error) {
 		keyString,
 		jsonString,
 		value,
-		},nil
+	}, nil
 }
 
 func (p *Parser) parseValue() (*Value, error) {
@@ -325,7 +235,7 @@ func (p *Parser) parseValue() (*Value, error) {
 
 	var value string
 	if valueString != nil {
-		value = valueString.Text
+		value = valueString.Value
 	}
 	if jsonString != nil {
 		value = jsonString.Value
@@ -337,7 +247,7 @@ func (p *Parser) parseValue() (*Value, error) {
 		valueString,
 		jsonString,
 		value,
-	},nil
+	}, nil
 }
 
 func (p *Parser) parseColon() (*Colon, error) {
@@ -359,30 +269,22 @@ func (p *Parser) parseKeyValue() (*KeyValue, error) {
 	current, line := p.current, p.line
 
 	comments, _ := p.tryParseComments()
-
 	key, err := p.parseKey()
 	if err != nil {
 		return nil, err
 	}
-
 	spaces0, _ := p.tryParseSpaces()
-
 	colon, err := p.parseColon()
 	if err != nil {
 		return nil, err
 	}
-
 	spaces1, _ := p.tryParseSpaces()
-
 	value, err := p.parseValue()
 	if err != nil {
 		return nil, err
 	}
-
 	space2, _ := p.tryParseSpaces()
-
 	comment, _ := p.tryParseComment()
-
 	eol, err := p.parseEol()
 	if err != nil {
 		return nil, err
@@ -401,18 +303,6 @@ func (p *Parser) parseKeyValue() (*KeyValue, error) {
 		comment,
 		eol,
 	}, nil
-}
-
-func (p *Parser) tryParseKeyValue() (*KeyValue, error) {
-	current, line := p.current, p.line
-
-	node, err := p.parseKeyValue()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
-	}
-
-	return node, nil
 }
 
 func (p *Parser) parseValueString() (*ValueString, error) {
@@ -459,17 +349,17 @@ func (p *Parser) parseValueString() (*ValueString, error) {
 		Position{p.current, p.line},
 		string(value),
 	}, nil
-
 }
 
-func (p *Parser) tryParseValueString() (*ValueString, error) {
+func (p *Parser) parseSectionHeader(section string) (*SectionHeader, error) {
 	current, line := p.current, p.line
-
-	node, err := p.parseValueString()
-	if err != nil {
-		p.current, p.line = current, line
-		return nil, err
+	s := fmt.Sprintf("[%s]", section)
+	if !p.tryParseString(s) {
+		return nil, newSyntaxError(p, fmt.Sprintf("[%s] is expected", section))
 	}
-
-	return node, nil
+	return &SectionHeader{
+		Position{current, line},
+		Position{p.current, p.line},
+		s,
+	}, nil
 }

@@ -10,6 +10,36 @@ type (
 		Node() (Position, Position)
 	}
 
+	Cookies struct {
+		Begin         Position
+		End           Position
+		Comments      *Comments
+		SectionHeader *SectionHeader
+		Spaces        *Spaces
+		Eol           *Eol
+		Cookies       []*Cookie
+	}
+
+	Cookie struct {
+		Begin       Position
+		End         Position
+		Comments    *Comments
+		Key         *Key
+		Spaces0     *Spaces
+		Colon       *Colon
+		Spaces1     *Spaces
+		CookieValue *CookieValue
+		Spaces2     *Spaces
+		Comment     *Comment
+		Eol         *Eol
+	}
+
+	CookieValue struct {
+		Begin Position
+		End   Position
+		Value string
+	}
+
 	Headers struct {
 		Begin   Position
 		End     Position
@@ -19,7 +49,7 @@ type (
 	Colon struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	KeyValue struct {
@@ -62,31 +92,31 @@ type (
 	KeyString struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	ValueString struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	Eol struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	Spaces struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	Whitespaces struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	Request struct {
@@ -100,6 +130,7 @@ type (
 		Comment  *Comment
 		Eol      *Eol
 		Headers  *Headers
+		Cookies  *Cookies
 	}
 
 	Method struct {
@@ -111,13 +142,13 @@ type (
 	Url struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	Comment struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 
 	Comments struct {
@@ -153,7 +184,7 @@ type (
 	SectionHeader struct {
 		Begin Position
 		End   Position
-		Text  string
+		Value string
 	}
 )
 
@@ -231,4 +262,20 @@ func (j *JsonString) Node() (Position, Position) {
 
 func (v *ValueString) Node() (Position, Position) {
 	return v.Begin, v.End
+}
+
+func (c *Cookies) Node() (Position, Position) {
+	return c.Begin, c.End
+}
+
+func (s *SectionHeader) Node() (Position, Position) {
+	return s.Begin, s.End
+}
+
+func (c *Cookie) Node() (Position, Position) {
+	return c.Begin, c.End
+}
+
+func (c *CookieValue) Node() (Position, Position) {
+	return c.Begin, c.End
 }
