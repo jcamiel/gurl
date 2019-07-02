@@ -327,17 +327,15 @@ func (p *Parser) parseValueString() (*ValueString, error) {
 			continue
 		}
 
-		// if we have trailing spaces, we must break
-		s, err := p.readRunesWhile(func(r rune) bool {
+		// Next spaces can be either part of the trailing spaces (with optional comment)
+		// or part if the value-string. In the first case, we must not consume it, and
+		// in the second we must continue and keep parsing value-string.
+		if p.isTrailingSpaces() {
+			break
+		}
+		s, _ := p.readRunesWhile(func(r rune) bool {
 			return isSpace(r)
 		})
-		if err != nil {
-			break
-		}
-		n, err = p.nextRune()
-		if err != nil || isNewLine(n) || n == '#' {
-			break
-		}
 		value = append(value, s...)
 	}
 
@@ -349,6 +347,25 @@ func (p *Parser) parseValueString() (*ValueString, error) {
 		Position{p.current, p.line},
 		string(value),
 	}, nil
+}
+
+// must start with spaces
+func (p *Parser) isTrailingSpaces() bool {
+	current := p.current
+	_, err := p.readRunesWhile(func(r rune) bool {
+		return isSpace(r)
+	})
+	if err != nil {
+		p.current = current
+		return true
+	}
+	n, err := p.nextRune()
+	if err != nil || isNewLine(n) || n == '#' {
+		p.current = current
+		return true
+	}
+	p.current = current
+	return false
 }
 
 func (p *Parser) parseSectionHeader(section string) (*SectionHeader, error) {

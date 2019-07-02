@@ -59,6 +59,11 @@ func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
 	for {
 		r, err := p.nextRune()
 		if err != nil {
+			// We can't read any data any more (EOF), if we haven't been able to read any rune, we
+			// return an EOF error, otherwise we return the read slice.
+			if begin == end {
+				return nil, err
+			}
 			break
 		}
 		if f(r) {
