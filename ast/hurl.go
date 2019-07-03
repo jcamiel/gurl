@@ -158,9 +158,7 @@ func (p *Parser) parseEol() *Eol {
 	}
 	current, line := p.current, p.line
 
-	eol, err := p.readRunesWhile(func(r rune) bool {
-		return isNewLine(r)
-	})
+	eol, err := p.readRunesWhile(isNewLine)
 	if err != nil && err != io.EOF {
 		p.err = newSyntaxError(p, "newline is expected")
 		return nil
@@ -171,9 +169,7 @@ func (p *Parser) parseEol() *Eol {
 			p.err = newSyntaxError(p, "newline is expected")
 			return nil
 		}
-		_, _ = p.readRunesWhile(func(r rune) bool {
-			return isWhitespace(r)
-		})
+		_, _ = p.readRunesWhile(isWhitespace)
 	}
 
 	return &Eol{
@@ -308,9 +304,6 @@ func (p *Parser) parseCookies() *Cookies {
 
 // Specific debug
 func (p *Parser) skipToNextEol() {
-	_, _ = p.readRunesWhile(func(r rune) bool {
-		return !isWhitespace(r)
-	})
-
+	_, _ = p.readRunesWhile(isNotNewLine)
 	_ = p.parseWhitespaces()
 }

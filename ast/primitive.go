@@ -8,9 +8,7 @@ func (p *Parser) parseWhitespaces() *Whitespaces {
 	}
 	current, line := p.current, p.line
 
-	whitespaces, err := p.readRunesWhile(func(r rune) bool {
-		return isWhitespace(r)
-	})
+	whitespaces, err := p.readRunesWhile(isWhitespace)
 	if err != nil || len(whitespaces) == 0 {
 		p.err = newSyntaxError(p, "space, tab or newline is expected at whitespaces beginning")
 		return nil
@@ -29,9 +27,7 @@ func (p *Parser) parseSpaces() *Spaces {
 	}
 	current, line := p.current, p.line
 
-	spaces, err := p.readRunesWhile(func(r rune) bool {
-		return isSpace(r)
-	})
+	spaces, err := p.readRunesWhile(isSpace)
 	if err != nil || len(spaces) == 0 {
 		p.err = newSyntaxError(p, "space or tab is expected at spaces beginning")
 		return nil
@@ -58,9 +54,7 @@ func (p *Parser) parseComment() *Comment {
 		p.err = newSyntaxError(p, "# is expected at comment beginning")
 		return nil
 	}
-	comment, _ := p.readRunesWhile(func(r rune) bool {
-		return !isNewLine(r)
-	})
+	comment, _ := p.readRunesWhile(isNotNewLine)
 
 	return &Comment{
 		Position{current, line},
@@ -362,9 +356,7 @@ func (p *Parser) parseValueString() *ValueString {
 		if p.isTrailingSpaces() {
 			break
 		}
-		s, _ := p.readRunesWhile(func(r rune) bool {
-			return isSpace(r)
-		})
+		s, _ := p.readRunesWhile(isSpace)
 		value = append(value, s...)
 	}
 
@@ -382,9 +374,7 @@ func (p *Parser) parseValueString() *ValueString {
 // must start with spaces
 func (p *Parser) isTrailingSpaces() bool {
 	current := p.current
-	_, err := p.readRunesWhile(func(r rune) bool {
-		return isSpace(r)
-	})
+	_, err := p.readRunesWhile(isSpace)
 	if err != nil {
 		p.current = current
 		return true
