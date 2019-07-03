@@ -20,13 +20,13 @@ func main() {
 
 	for _, file := range os.Args[1:] {
 
-		parser, err := ast.NewParserFromFile(file)
+		p, err := ast.NewParserFromFile(file)
 		if err != nil {
 			log.Panic(err)
 		}
 
-		hurl, err := parser.Parse()
-		if err != nil {
+		hurl := p.Parse()
+		if err := p.Err(); err != nil {
 			log.Panic(err)
 		}
 

@@ -1,108 +1,136 @@
 package ast
 
 func (p *Parser) tryParseString(s string) bool {
+	if p.err != nil {
+		return false
+	}
 	current, line := p.current, p.line
 	runes := []rune(s)
 	next, err := p.readRunes(len(runes))
 	if err != nil || !equal(runes, next) {
 		p.current, p.line = current, line
+		p.err = nil
 		return false
 	}
 	return true
 }
 
-func (p *Parser) tryParseWhitespaces() (*Whitespaces, error) {
+func (p *Parser) tryParseWhitespaces() *Whitespaces {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseWhitespaces()
-	if err != nil {
+	node := p.parseWhitespaces()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseSpaces() (*Spaces, error) {
+func (p *Parser) tryParseSpaces() *Spaces {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseSpaces()
-	if err != nil {
+	node := p.parseSpaces()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseComment() (*Comment, error) {
+func (p *Parser) tryParseComment() *Comment {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseComment()
-	if err != nil {
+	node := p.parseComment()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseCommentLine() (*CommentLine, error) {
+func (p *Parser) tryParseCommentLine() *CommentLine {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseCommentLine()
-	if err != nil {
+	node := p.parseCommentLine()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseComments() (*Comments, error) {
+func (p *Parser) tryParseComments() *Comments {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseComments()
-	if err != nil {
+	node := p.parseComments()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseKeyString() (*KeyString, error) {
+func (p *Parser) tryParseKeyString() *KeyString {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseKeyString()
-	if err != nil {
+	node := p.parseKeyString()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseKeyValue() (*KeyValue, error) {
+func (p *Parser) tryParseKeyValue() *KeyValue {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseKeyValue()
-	if err != nil {
+	node := p.parseKeyValue()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseValueString() (*ValueString, error) {
+func (p *Parser) tryParseValueString() *ValueString {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseValueString()
-	if err != nil {
+	node := p.parseValueString()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }

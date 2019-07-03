@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -9,9 +8,8 @@ import (
 func TestParseMethodSucceed(t *testing.T) {
 	text := "POST http://google.com"
 	p := NewParserFromString(text, "")
-	node, err := p.parseMethod()
-
-	assert.Nil(t, err)
+	node := p.parseMethod()
+	assert.Nil(t, p.Err())
 	assert.Equal(t, &Method{
 		Position{0, 1},
 		Position{4, 1},
@@ -22,9 +20,9 @@ func TestParseMethodSucceed(t *testing.T) {
 func TestParseMethodFailed(t *testing.T) {
 	text := "ABCEDFGHIJKLM"
 	p := NewParserFromString(text, "")
-	node, err := p.parseMethod()
+	node := p.parseMethod()
 	assert.Nil(t, node)
-	assert.NotNil(t, err)
+	assert.NotNil(t, p.Err())
 }
 
 func TestParseRequest(t *testing.T) {
@@ -34,14 +32,14 @@ func TestParseRequest(t *testing.T) {
 	var tests = []struct {
 		text string
 	}{
-		/*{"GET http://www.example.org"},
+		{"GET http://www.example.org"},
 		{"GET\u0020http://www.example.org"},
 		{"GET http://www.example.org\t# Some comment"},
 		{"GET http://www.example.org/foo.html#bar # Some comment"},
 		{`# Some comment on request
 # ----------
 	GET http://www.example.org/foo.html#bar # Some comment
-`},*/
+`},
 		{`GET {{orange_url}}/demenagement/planifier
 User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1
 	X-WASSUP-AOL: 10
@@ -55,27 +53,24 @@ User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/6
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
 			p = NewParserFromString(test.text, "")
-			node, _ = p.parseRequest()
+			node = p.parseRequest()
 			assert.NotNil(t, node)
+			assert.Nil(t, p.Err())
 		})
 	}
 }
 
 func TestParseFailed(t *testing.T) {
-
 	var text string
-	var err error
 	var p *Parser
 
 	text = "\n\nPOSThttp://google.com"
 	p = NewParserFromString(text, "")
-	_, err = p.parseRequest()
-	fmt.Println(err)
-	assert.NotNil(t, err)
+	_ = p.parseRequest()
+	assert.NotNil(t, p.Err())
 }
 
 func TestParseHurlFile(t *testing.T) {
-
 	var text string
 	var node *HurlFile
 	var p *Parser
@@ -108,8 +103,9 @@ HTTP/1.1 302
 [Asserts]
 header Location equals "https://sso.orange.fr/espace-client/m/?page=demenagement-demande&MCO=SOH&idContrat=9003384900"`
 	p = NewParserFromString(text, "")
-	node, _ = p.parseHurlFile()
+	node = p.parseHurlFile()
 	assert.NotNil(t, node)
+	assert.Nil(t, p.Err())
 }
 
 func TestParseHeaders(t *testing.T) {
@@ -122,8 +118,9 @@ key1 : value1
 key2 : value2
 key3 : value3`
 	p = NewParserFromString(text, "")
-	node, _ = p.parseHeaders()
+	node = p.parseHeaders()
 	assert.NotNil(t, node)
+	assert.Nil(t, p.Err())
 }
 
 func TestCookies( t *testing.T) {
@@ -137,6 +134,7 @@ func TestCookies( t *testing.T) {
 	cookieC : valueC
 `
 	p = NewParserFromString(text, "")
-	node, _ = p.parseCookies()
+	node = p.parseCookies()
 	assert.NotNil(t, node)
+	assert.Nil(t, p.Err())
 }

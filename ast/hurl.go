@@ -1,18 +1,22 @@
 package ast
 
 import (
-	"fmt"
 	"io"
 )
 
-func (p *Parser) parseHurlFile() (*HurlFile, error) {
+func (p *Parser) parseHurlFile() *HurlFile {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	whitespaces, _ := p.tryParseWhitespaces()
+	whitespaces := p.tryParseWhitespaces()
 	var entries []*Entry
 	for {
-		e, err := p.parseEntry()
-		if err != nil {
+		e := p.parseEntry()
+		if p.err != nil {
+			// FIXME: for the moment, silent fail on error.
+			p.err = nil
 			if p.hasRuneToRead() {
 				p.skipToNextEol()
 				continue
@@ -22,54 +26,54 @@ func (p *Parser) parseHurlFile() (*HurlFile, error) {
 		entries = append(entries, e)
 	}
 
+	if p.err != nil {
+		return nil
+	}
 	return &HurlFile{
 		Position{current, line},
 		Position{p.current, p.line},
 		whitespaces,
 		entries,
-	}, nil
+	}
 }
 
-func (p *Parser) parseEntry() (*Entry, error) {
+func (p *Parser) parseEntry() *Entry {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	request, err := p.parseRequest()
-	if err != nil {
-		return nil, err
-	}
+	request := p.parseRequest()
 
+	if p.err != nil {
+		return nil
+	}
 	return &Entry{
 		Position{current, line},
 		Position{p.current, p.line},
 		request,
-	}, nil
+	}
 }
 
-func (p *Parser) parseRequest() (*Request, error) {
+func (p *Parser) parseRequest() *Request {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	comments, _ := p.tryParseComments()
-	method, err := p.parseMethod()
-	if err != nil {
-		return nil, err
-	}
-	spaces0, err := p.parseSpaces()
-	if err != nil {
-		return nil, err
-	}
-	url, err := p.parseUrl()
-	if err != nil {
-		return nil, err
-	}
-	spaces1, _ := p.tryParseSpaces()
-	comment, _ := p.tryParseComment()
-	eol, err := p.parseEol()
-	if err != nil {
-		return nil, err
-	}
-	headers, _ := p.tryParseHeaders()
-	cookies, _ := p.tryParseCookies()
+	comments := p.tryParseComments()
+	method := p.parseMethod()
+	spaces0 := p.parseSpaces()
+	url := p.parseUrl()
+	spaces1 := p.tryParseSpaces()
+	comment := p.tryParseComment()
+	eol := p.parseEol()
+	headers := p.tryParseHeaders()
+	cookies := p.tryParseCookies()
 
+	if p.err != nil {
+		return nil
+	}
 	return &Request{
 		Position{current, line},
 		Position{p.current, p.line},
@@ -82,10 +86,13 @@ func (p *Parser) parseRequest() (*Request, error) {
 		eol,
 		headers,
 		cookies,
-	}, nil
+	}
 }
 
-func (p *Parser) parseMethod() (*Method, error) {
+func (p *Parser) parseMethod() *Method {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	methods := []string{
@@ -105,13 +112,17 @@ func (p *Parser) parseMethod() (*Method, error) {
 				Position{current, line},
 				Position{p.current, p.line},
 				method,
-			}, nil
+			}
 		}
 	}
-	return nil, newSyntaxError(p, fmt.Sprintf("method %v is expected", methods))
+	p.err = newSyntaxError(p, "method is expected")
+	return nil
 }
 
-func (p *Parser) parseUrl() (*Url, error) {
+func (p *Parser) parseUrl() *Url {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	isGenDelims := func(r rune) bool {
@@ -130,29 +141,35 @@ func (p *Parser) parseUrl() (*Url, error) {
 		return isReserved || isUnreserved || isHurlSpecific
 	})
 	if err != nil || len(url) == 0 {
-		return nil, newSyntaxError(p, "url is expected")
+		p.err = newSyntaxError(p, "url is expected")
+		return nil
 	}
 
 	return &Url{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(url),
-	}, nil
+	}
 }
 
-func (p *Parser) parseEol() (*Eol, error) {
+func (p *Parser) parseEol() *Eol {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	eol, err := p.readRunesWhile(func(r rune) bool {
 		return isNewLine(r)
 	})
 	if err != nil && err != io.EOF {
-		return nil, newSyntaxError(p, "newline is expected")
+		p.err = newSyntaxError(p, "newline is expected")
+		return nil
 	}
 
 	if err != io.EOF {
 		if len(eol) == 0 {
-			return nil, newSyntaxError(p, "newline is expected")
+			p.err = newSyntaxError(p, "newline is expected")
+			return nil
 		}
 		_, _ = p.readRunesWhile(func(r rune) bool {
 			return isWhitespace(r)
@@ -163,32 +180,39 @@ func (p *Parser) parseEol() (*Eol, error) {
 		Position{current, line},
 		Position{p.current, p.line},
 		string(p.buffer[current:p.current]),
-	}, nil
+	}
 }
 
-func (p *Parser) parseHeaders() (*Headers, error) {
+func (p *Parser) parseHeaders() *Headers {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	headers := make([]*KeyValue, 0)
 	for {
-		h, err := p.tryParseKeyValue()
-		if err != nil {
+		h := p.tryParseKeyValue()
+		if h == nil {
 			break
 		}
 		headers = append(headers, h)
 	}
 	if len(headers) == 0 {
-		return nil, newSyntaxError(p, "headers are expected")
+		p.err = newSyntaxError(p, "headers are expected")
+		return nil
 	}
 
 	return &Headers{
 		Position{current, line},
 		Position{p.current, p.line},
 		headers,
-	}, nil
+	}
 }
 
-func (p *Parser) parseCookieValue() (*CookieValue, error) {
+func (p *Parser) parseCookieValue() *CookieValue {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	cookie, err := p.readRunesWhile(func(r rune) bool {
@@ -200,41 +224,36 @@ func (p *Parser) parseCookieValue() (*CookieValue, error) {
 			r == '%'
 	})
 	if err != nil {
-		return nil, newSyntaxError(p, "[A-Za-z0-9:/%] char is expected for cookie-value")
+		p.err = newSyntaxError(p, "[A-Za-z0-9:/%] char is expected for cookie-value")
+		return nil
 	}
 
 	return &CookieValue{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(cookie),
-	}, nil
+	}
 }
 
-func (p *Parser) parseCookie() (*Cookie, error) {
+func (p *Parser) parseCookie() *Cookie {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	comments, _ := p.tryParseComments()
-	key, err := p.parseKey()
-	if err != nil {
-		return nil, err
-	}
-	spaces0, _ := p.tryParseSpaces()
-	colon, err := p.parseColon()
-	if err != nil {
-		return nil, err
-	}
-	spaces1, _ := p.tryParseSpaces()
-	cookieValue, err := p.parseCookieValue()
-	if err != nil {
-		return nil, err
-	}
-	spaces2, _ := p.tryParseSpaces()
-	comment, _ := p.tryParseComment()
-	eol, err := p.parseEol()
-	if err != nil {
-		return nil, err
-	}
+	comments := p.tryParseComments()
+	key := p.parseKey()
+	spaces0 := p.tryParseSpaces()
+	colon := p.parseColon()
+	spaces1 := p.tryParseSpaces()
+	cookieValue := p.parseCookieValue()
+	spaces2 := p.tryParseSpaces()
+	comment := p.tryParseComment()
+	eol := p.parseEol()
 
+	if p.err != nil {
+		return nil
+	}
 	return &Cookie{
 		Position{current, line},
 		Position{p.current, p.line},
@@ -247,31 +266,35 @@ func (p *Parser) parseCookie() (*Cookie, error) {
 		spaces2,
 		comment,
 		eol,
-	}, nil
+	}
 }
 
-func (p *Parser) parseCookies() (*Cookies, error) {
+func (p *Parser) parseCookies() *Cookies {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	comments, _ := p.tryParseComments()
-	section, err := p.parseSectionHeader("Cookies")
-	if err != nil {
-		return nil, err
-	}
-	spaces, _ := p.tryParseSpaces()
-	eol, err := p.parseEol()
-	if err != nil {
-		return nil, err
-	}
+	comments := p.tryParseComments()
+	section := p.parseSectionHeader("Cookies")
+	spaces := p.tryParseSpaces()
+	eol := p.parseEol()
+
 	cookies := make([]*Cookie, 0)
 	for {
-		c, err := p.tryParseCookie()
-		if err != nil {
+		c := p.tryParseCookie()
+		if c == nil {
 			break
 		}
 		cookies = append(cookies, c)
 	}
+	if len(cookies) > 0 {
+		p.err = nil
+	}
 
+	if p.err != nil {
+		return nil
+	}
 	return &Cookies{
 		Position{current, line},
 		Position{p.current, p.line},
@@ -280,7 +303,7 @@ func (p *Parser) parseCookies() (*Cookies, error) {
 		spaces,
 		eol,
 		cookies,
-	}, nil
+	}
 }
 
 // Specific debug
@@ -289,5 +312,5 @@ func (p *Parser) skipToNextEol() {
 		return !isWhitespace(r)
 	})
 
-	_, _ = p.parseWhitespaces()
+	_ = p.parseWhitespaces()
 }
