@@ -11,6 +11,7 @@ type Parser struct {
 	buffer   []rune // file content
 	current  int    // start of the buffer, current rune
 	line     int    // current line number in rune, starting at 1
+	err      error
 }
 
 func NewParserFromFile(path string) (*Parser, error) {
@@ -26,8 +27,12 @@ func NewParserFromString(text string, filename string) *Parser {
 	return &Parser{filename: filename, buffer: runes, line: 1}
 }
 
-func (p *Parser) Parse() (*HurlFile, error) {
+func (p *Parser) Parse() *HurlFile {
 	return p.parseHurlFile()
+}
+
+func (p *Parser) Err() error {
+	return p.err
 }
 
 func (p *Parser) readRune() (rune, error) {

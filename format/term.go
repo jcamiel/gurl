@@ -43,7 +43,7 @@ func (p *TermFormatter) Visit(node ast.Noder) ast.Visitor {
 		p.text += aurora.Magenta(n.Value).String()
 		return nil
 	case *ast.KeyString:
-		p.text += aurora.Green(n.Value).String()
+		p.text += aurora.Cyan(n.Value).String()
 		return nil
 	case *ast.ValueString:
 		p.text += aurora.Green(n.Value).String()

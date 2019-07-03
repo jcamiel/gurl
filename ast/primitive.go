@@ -2,51 +2,63 @@ package ast
 
 import "fmt"
 
-func (p *Parser) parseWhitespaces() (*Whitespaces, error) {
+func (p *Parser) parseWhitespaces() *Whitespaces {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	whitespaces, err := p.readRunesWhile(func(r rune) bool {
 		return isWhitespace(r)
 	})
 	if err != nil || len(whitespaces) == 0 {
-		return nil, newSyntaxError(p, "space, tab or newline is expected at whitespaces beginning")
+		p.err = newSyntaxError(p, "space, tab or newline is expected at whitespaces beginning")
+		return nil
 	}
 
 	return &Whitespaces{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(whitespaces),
-	}, nil
+	}
 }
 
-func (p *Parser) parseSpaces() (*Spaces, error) {
+func (p *Parser) parseSpaces() *Spaces {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	spaces, err := p.readRunesWhile(func(r rune) bool {
 		return isSpace(r)
 	})
 	if err != nil || len(spaces) == 0 {
-		return nil, newSyntaxError(p, "space or tab is expected at spaces beginning")
+		p.err = newSyntaxError(p, "space or tab is expected at spaces beginning")
+		return nil
 	}
 
 	return &Spaces{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(spaces),
-	}, nil
+	}
 }
 
-func (p *Parser) parseComment() (*Comment, error) {
+func (p *Parser) parseComment() *Comment {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	r, err := p.nextRune()
-	if err != nil {
-		return nil, err
+	if p.err = err; err != nil {
+		return nil
 	}
 	if r != hash {
-		return nil, newSyntaxError(p, "# is expected at comment beginning")
+		p.err = newSyntaxError(p, "# is expected at comment beginning")
+		return nil
 	}
-	comment, err := p.readRunesWhile(func(r rune) bool {
+	comment, _ := p.readRunesWhile(func(r rune) bool {
 		return !isNewLine(r)
 	})
 
@@ -54,82 +66,88 @@ func (p *Parser) parseComment() (*Comment, error) {
 		Position{current, line},
 		Position{p.current, p.line},
 		string(comment),
-	}, nil
+	}
 }
 
-func (p *Parser) parseCommentLine() (*CommentLine, error) {
+func (p *Parser) parseCommentLine() *CommentLine {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	comment, err := p.parseComment()
-	if err != nil {
-		return nil, err
-	}
-	eol, err := p.parseEol()
-	if err != nil {
-		return nil, err
-	}
-	whitespaces, _ := p.tryParseWhitespaces()
+	comment := p.parseComment()
+	eol := p.parseEol()
+	whitespaces := p.tryParseWhitespaces()
 
+	if p.err != nil {
+		return nil
+	}
 	return &CommentLine{
 		Position{current, line},
 		Position{p.current, p.line},
 		comment,
 		eol,
 		whitespaces,
-	}, nil
-
+	}
 }
 
-func (p *Parser) parseComments() (*Comments, error) {
+func (p *Parser) parseComments() *Comments {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	var comments []*CommentLine
+	var lines []*CommentLine
 	for {
-		c, err := p.tryParseCommentLine()
-		if err != nil {
+		c := p.tryParseCommentLine()
+		if c == nil {
 			break
 		}
-		comments = append(comments, c)
+		lines = append(lines, c)
 	}
-	if len(comments) == 0 {
-		return nil, newSyntaxError(p, "comments is expected")
+	if len(lines) == 0 {
+		p.err = newSyntaxError(p, "comments is expected")
+		return nil
 	}
 
 	return &Comments{
 		Position{current, line},
 		Position{p.current, p.line},
-		comments,
-	}, nil
-
+		lines,
+	}
 }
 
-func (p *Parser) parseJsonString() (*JsonString, error) {
-
+func (p *Parser) parseJsonString() *JsonString {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	r, err := p.readRune()
-	if err != nil {
-		return nil, err
+	if p.err = err; err != nil {
+		return nil
 	}
 	if r != '"' {
-		return nil, newSyntaxError(p, "\" is expected at json-string beginning")
+		p.err = newSyntaxError(p, "\" is expected at json-string beginning")
+		return nil
 	}
 	value := make([]rune, 0)
 	for {
 		chars, err := p.readRunesWhile(func(r rune) bool {
 			return r != '"' && r != '\\' && !isControlCharacter(r)
 		})
-		if err != nil {
-			return nil, err
+		if p.err = err; err != nil {
+			return nil
 		}
 		value = append(value, chars...)
 
 		r, err = p.readRune()
-		if err != nil {
-			return nil, err
+		if p.err = err; err != nil {
+			return nil
 		}
 		if isControlCharacter(r) {
-			return nil, newSyntaxError(p, "control character not allowed in json-string")
+			p.err = newSyntaxError(p, "control character not allowed in json-string")
+			return nil
 		}
 		if r == '"' {
 			break
@@ -137,14 +155,13 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 		// Parsing of escaped char
 		if r == '\\' {
 			r, err = p.readRune()
-			if err != nil {
-				return nil, err
+			if p.err = err; err != nil {
+				return nil
 			}
-
 			if r == 'u' {
-				return nil, newSyntaxError(p, "unicode literal not supported")
+				p.err = newSyntaxError(p, "unicode literal not supported in json-string")
+				return nil
 			}
-
 			controls := map[rune]rune{
 				'"':  '"',
 				'\\': '\\',
@@ -157,7 +174,8 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 			}
 			c, ok := controls[r]
 			if !ok {
-				return nil, newSyntaxError(p, "control characted is expected")
+				p.err = newSyntaxError(p, "control characted is expected")
+				return nil
 			}
 			value = append(value, c)
 		}
@@ -168,37 +186,45 @@ func (p *Parser) parseJsonString() (*JsonString, error) {
 		Position{p.current, p.line},
 		string(p.buffer[current:p.current]),
 		string(value),
-	}, nil
+	}
 }
 
-func (p *Parser) parseKeyString() (*KeyString, error) {
+func (p *Parser) parseKeyString() *KeyString {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	key, err := p.readRunesWhile(func(r rune) bool {
 		return !isWhitespace(r) && r != ':' && r != '"' && r != '#'
 	})
 	if err != nil || len(key) == 0 {
-		return nil, newSyntaxError(p, "char is expected at key-string beginning")
+		p.err = newSyntaxError(p, "char is expected at key-string beginning")
+		return nil
 	}
 
 	return &KeyString{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(key),
-	}, nil
+	}
 }
 
-func (p *Parser) parseKey() (*Key, error) {
+func (p *Parser) parseKey() *Key {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	var keyString *KeyString
 	var jsonString *JsonString
 
-	keyString, err := p.tryParseKeyString()
-	if err != nil {
-		jsonString, err = p.parseJsonString()
-		if err != nil {
-			return nil, newSyntaxError(p, "key-string or json-string is expected at key beginning")
+	keyString = p.tryParseKeyString()
+	if keyString == nil {
+		jsonString = p.parseJsonString()
+		if p.err != nil {
+			p.err = newSyntaxError(p, "key-string or json-string is expected at key beginning")
+			return nil
 		}
 	}
 
@@ -209,27 +235,30 @@ func (p *Parser) parseKey() (*Key, error) {
 	if jsonString != nil {
 		value = jsonString.Value
 	}
-
 	return &Key{
 		Position{current, line},
 		Position{p.current, p.line},
 		keyString,
 		jsonString,
 		value,
-	}, nil
+	}
 }
 
-func (p *Parser) parseValue() (*Value, error) {
+func (p *Parser) parseValue() *Value {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	var valueString *ValueString
 	var jsonString *JsonString
 
-	valueString, err := p.tryParseValueString()
-	if err != nil {
-		jsonString, err = p.parseJsonString()
-		if err != nil {
-			return nil, newSyntaxError(p, "key-string or json-string is expected at key beginning")
+	valueString = p.tryParseValueString()
+	if valueString == nil {
+		jsonString = p.parseJsonString()
+		if p.err != nil {
+			p.err = newSyntaxError(p, "key-string or json-string is expected at key beginning")
+			return nil
 		}
 	}
 
@@ -240,56 +269,53 @@ func (p *Parser) parseValue() (*Value, error) {
 	if jsonString != nil {
 		value = jsonString.Value
 	}
-
 	return &Value{
 		Position{current, line},
 		Position{p.current, p.line},
 		valueString,
 		jsonString,
 		value,
-	}, nil
+	}
 }
 
-func (p *Parser) parseColon() (*Colon, error) {
+func (p *Parser) parseColon() *Colon {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	r, err := p.readRune()
 	if err != nil || r != ':' {
-		return nil, newSyntaxError(p, ": is expected")
+		p.err = newSyntaxError(p, ": is expected")
+		return nil
 	}
 
 	return &Colon{
 		Position{current, line},
 		Position{p.current, p.line},
 		":",
-	}, nil
+	}
 }
 
-func (p *Parser) parseKeyValue() (*KeyValue, error) {
+func (p *Parser) parseKeyValue() *KeyValue {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	comments, _ := p.tryParseComments()
-	key, err := p.parseKey()
-	if err != nil {
-		return nil, err
-	}
-	spaces0, _ := p.tryParseSpaces()
-	colon, err := p.parseColon()
-	if err != nil {
-		return nil, err
-	}
-	spaces1, _ := p.tryParseSpaces()
-	value, err := p.parseValue()
-	if err != nil {
-		return nil, err
-	}
-	space2, _ := p.tryParseSpaces()
-	comment, _ := p.tryParseComment()
-	eol, err := p.parseEol()
-	if err != nil {
-		return nil, err
-	}
+	comments := p.tryParseComments()
+	key := p.parseKey()
+	spaces0 := p.tryParseSpaces()
+	colon := p.parseColon()
+	spaces1 := p.tryParseSpaces()
+	value := p.parseValue()
+	space2 := p.tryParseSpaces()
+	comment := p.tryParseComment()
+	eol := p.parseEol()
 
+	if p.err != nil {
+		return nil
+	}
 	return &KeyValue{
 		Position{current, line},
 		Position{p.current, p.line},
@@ -302,10 +328,13 @@ func (p *Parser) parseKeyValue() (*KeyValue, error) {
 		space2,
 		comment,
 		eol,
-	}, nil
+	}
 }
 
-func (p *Parser) parseValueString() (*ValueString, error) {
+func (p *Parser) parseValueString() *ValueString {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
 	value := make([]rune, 0)
@@ -340,13 +369,14 @@ func (p *Parser) parseValueString() (*ValueString, error) {
 	}
 
 	if len(value) == 0 {
-		return nil, newSyntaxError(p, "# or whitespaces is forbidden at value-string beginning")
+		p.err = newSyntaxError(p, "# or whitespaces is forbidden at value-string beginning")
+		return nil
 	}
 	return &ValueString{
 		Position{current, line},
 		Position{p.current, p.line},
 		string(value),
-	}, nil
+	}
 }
 
 // must start with spaces
@@ -368,15 +398,19 @@ func (p *Parser) isTrailingSpaces() bool {
 	return false
 }
 
-func (p *Parser) parseSectionHeader(section string) (*SectionHeader, error) {
+func (p *Parser) parseSectionHeader(section string) *SectionHeader {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 	s := fmt.Sprintf("[%s]", section)
 	if !p.tryParseString(s) {
-		return nil, newSyntaxError(p, fmt.Sprintf("[%s] is expected", section))
+		p.err = newSyntaxError(p, fmt.Sprintf("[%s] is expected", section))
+		return nil
 	}
 	return &SectionHeader{
 		Position{current, line},
 		Position{p.current, p.line},
 		s,
-	}, nil
+	}
 }

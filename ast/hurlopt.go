@@ -1,37 +1,46 @@
 package ast
 
-func (p *Parser) tryParseHeaders() (*Headers, error) {
+func (p *Parser) tryParseHeaders() *Headers {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseHeaders()
-	if err != nil {
+	node := p.parseHeaders()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseCookies() (*Cookies, error) {
+func (p *Parser) tryParseCookies() *Cookies {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseCookies()
-	if err != nil {
+	node := p.parseCookies()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }
 
-func (p *Parser) tryParseCookie() (*Cookie, error) {
+func (p *Parser) tryParseCookie() *Cookie {
+	if p.err != nil {
+		return nil
+	}
 	current, line := p.current, p.line
 
-	node, err := p.parseCookie()
-	if err != nil {
+	node := p.parseCookie()
+	if p.err != nil {
 		p.current, p.line = current, line
-		return nil, err
+		p.err = nil
+		return nil
 	}
-
-	return node, nil
+	return node
 }

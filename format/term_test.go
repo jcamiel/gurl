@@ -37,8 +37,9 @@ HTTP/1.1 302
 header Location equals "https://sso.orange.fr/espace-client/m/?page=demenagement-demande&MCO=SOH&idContrat=9003384900"`
 
 	p := ast.NewParserFromString(input, "")
-	hurl, _ := p.Parse()
+	hurl := p.Parse()
 	assert.NotNil(t, hurl)
+	assert.Nil(t, p.Err())
 
 	formatter := NewTermFormatter()
 	output := formatter.ToText(hurl)
