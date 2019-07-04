@@ -1,3 +1,11 @@
-Ajoute le champs Line dans Parser, et Position devient une struct Line, Offset.
+# Build
 
-Ajoute le node Spaces (sans test).
+```bash
+go build -o bin/gurl cmd/gurl/main.go
+```
+
+# Count cloc
+
+```bash
+cloc --not-match-f '_test\.go$'
+```
