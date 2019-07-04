@@ -96,7 +96,7 @@ func (p *Parser) nextRunes(count int) ([]rune, error) {
 	return p.buffer[p.current:end], nil
 }
 
-func newSyntaxError(p *Parser, text string) error {
+func (p *Parser) newSyntaxError(text string) error {
 	pos := Position{p.current, p.line}
 	return &SyntaxError{text, pos}
 }

@@ -10,7 +10,7 @@ func (p *Parser) parseWhitespaces() *Whitespaces {
 
 	whitespaces, err := p.readRunesWhile(isWhitespace)
 	if err != nil || len(whitespaces) == 0 {
-		p.err = newSyntaxError(p, "space, tab or newline is expected at whitespaces beginning")
+		p.err = p.newSyntaxError("space, tab or newline is expected at whitespaces beginning")
 		return nil
 	}
 
@@ -29,7 +29,7 @@ func (p *Parser) parseSpaces() *Spaces {
 
 	spaces, err := p.readRunesWhile(isSpace)
 	if err != nil || len(spaces) == 0 {
-		p.err = newSyntaxError(p, "space or tab is expected at spaces beginning")
+		p.err = p.newSyntaxError("space or tab is expected at spaces beginning")
 		return nil
 	}
 
@@ -51,7 +51,7 @@ func (p *Parser) parseComment() *Comment {
 		return nil
 	}
 	if r != hash {
-		p.err = newSyntaxError(p, "# is expected at comment beginning")
+		p.err = p.newSyntaxError("# is expected at comment beginning")
 		return nil
 	}
 	comment, _ := p.readRunesWhile(isNotNewLine)
@@ -116,7 +116,7 @@ func (p *Parser) parseNCommentLine() []*CommentLine {
 		cls = append(cls, c)
 	}
 	if len(cls) == 0 {
-		p.err = newSyntaxError(p, "At least one comment-line is expected")
+		p.err = p.newSyntaxError("At least one comment-line is expected")
 		return nil
 	}
 	return cls
@@ -133,7 +133,7 @@ func (p *Parser) parseJsonString() *JsonString {
 		return nil
 	}
 	if r != '"' {
-		p.err = newSyntaxError(p, "\" is expected at json-string beginning")
+		p.err = p.newSyntaxError("\" is expected at json-string beginning")
 		return nil
 	}
 	value := make([]rune, 0)
@@ -151,7 +151,7 @@ func (p *Parser) parseJsonString() *JsonString {
 			return nil
 		}
 		if isControlCharacter(r) {
-			p.err = newSyntaxError(p, "control character not allowed in json-string")
+			p.err = p.newSyntaxError("control character not allowed in json-string")
 			return nil
 		}
 		if r == '"' {
@@ -164,7 +164,7 @@ func (p *Parser) parseJsonString() *JsonString {
 				return nil
 			}
 			if r == 'u' {
-				p.err = newSyntaxError(p, "unicode literal not supported in json-string")
+				p.err = p.newSyntaxError("unicode literal not supported in json-string")
 				return nil
 			}
 			controls := map[rune]rune{
@@ -179,7 +179,7 @@ func (p *Parser) parseJsonString() *JsonString {
 			}
 			c, ok := controls[r]
 			if !ok {
-				p.err = newSyntaxError(p, "control characted is expected")
+				p.err = p.newSyntaxError("control characted is expected")
 				return nil
 			}
 			value = append(value, c)
@@ -204,7 +204,7 @@ func (p *Parser) parseKeyString() *KeyString {
 		return !isWhitespace(r) && r != ':' && r != '"' && r != '#'
 	})
 	if err != nil || len(key) == 0 {
-		p.err = newSyntaxError(p, "char is expected at key-string beginning")
+		p.err = p.newSyntaxError("char is expected at key-string beginning")
 		return nil
 	}
 
@@ -228,7 +228,7 @@ func (p *Parser) parseKey() *Key {
 	if keyString == nil {
 		jsonString = p.parseJsonString()
 		if p.err != nil {
-			p.err = newSyntaxError(p, "key-string or json-string is expected at key beginning")
+			p.err = p.newSyntaxError("key-string or json-string is expected at key beginning")
 			return nil
 		}
 	}
@@ -262,7 +262,7 @@ func (p *Parser) parseValue() *Value {
 	if valueString == nil {
 		jsonString = p.parseJsonString()
 		if p.err != nil {
-			p.err = newSyntaxError(p, "key-string or json-string is expected at key beginning")
+			p.err = p.newSyntaxError("key-string or json-string is expected at key beginning")
 			return nil
 		}
 	}
@@ -291,7 +291,7 @@ func (p *Parser) parseColon() *Colon {
 
 	r, err := p.readRune()
 	if err != nil || r != ':' {
-		p.err = newSyntaxError(p, ": is expected")
+		p.err = p.newSyntaxError(": is expected")
 		return nil
 	}
 
@@ -349,7 +349,7 @@ func (p *Parser) parseNKeyValue() []*KeyValue {
 		kvs = append(kvs, k)
 	}
 	if len(kvs) == 0 {
-		p.err = newSyntaxError(p, "At least one key-value is expected")
+		p.err = p.newSyntaxError("At least one key-value is expected")
 		return nil
 	}
 	return kvs
@@ -391,7 +391,7 @@ func (p *Parser) parseValueString() *ValueString {
 	}
 
 	if len(value) == 0 {
-		p.err = newSyntaxError(p, "# or whitespaces is forbidden at value-string beginning")
+		p.err = p.newSyntaxError("# or whitespaces is forbidden at value-string beginning")
 		return nil
 	}
 	return &ValueString{
@@ -425,7 +425,7 @@ func (p *Parser) parseSectionHeader(section string) *SectionHeader {
 	current, line := p.current, p.line
 	s := fmt.Sprintf("[%s]", section)
 	if !p.tryParseString(s) {
-		p.err = newSyntaxError(p, fmt.Sprintf("[%s] is expected", section))
+		p.err = p.newSyntaxError(fmt.Sprintf("[%s] is expected", section))
 		return nil
 	}
 	return &SectionHeader{

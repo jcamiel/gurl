@@ -126,7 +126,7 @@ func (p *Parser) parseMethod() *Method {
 			}
 		}
 	}
-	p.err = newSyntaxError(p, "method is expected")
+	p.err = p.newSyntaxError("method is expected")
 	return nil
 }
 
@@ -152,7 +152,7 @@ func (p *Parser) parseUrl() *Url {
 		return isReserved || isUnreserved || isHurlSpecific
 	})
 	if err != nil || len(url) == 0 {
-		p.err = newSyntaxError(p, "url is expected")
+		p.err = p.newSyntaxError("url is expected")
 		return nil
 	}
 
@@ -171,13 +171,13 @@ func (p *Parser) parseEol() *Eol {
 
 	eol, err := p.readRunesWhile(isNewLine)
 	if err != nil && err != io.EOF {
-		p.err = newSyntaxError(p, "newline is expected")
+		p.err = p.newSyntaxError("newline is expected")
 		return nil
 	}
 
 	if err != io.EOF {
 		if len(eol) == 0 {
-			p.err = newSyntaxError(p, "newline is expected")
+			p.err = p.newSyntaxError("newline is expected")
 			return nil
 		}
 		_, _ = p.readRunesWhile(isWhitespace)
@@ -222,7 +222,7 @@ func (p *Parser) parseCookieValue() *CookieValue {
 			r == '%'
 	})
 	if err != nil {
-		p.err = newSyntaxError(p, "[A-Za-z0-9:/%] char is expected for cookie-value")
+		p.err = p.newSyntaxError("[A-Za-z0-9:/%] char is expected for cookie-value")
 		return nil
 	}
 
@@ -280,7 +280,7 @@ func (p *Parser) parseNCookie() []*Cookie {
 		cookies = append(cookies, c)
 	}
 	if len(cookies) == 0 {
-		p.err = newSyntaxError(p, "At least one comment-line is expected")
+		p.err = p.newSyntaxError("At least one comment-line is expected")
 		return nil
 	}
 	return cookies
