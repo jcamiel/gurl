@@ -9,8 +9,7 @@ import (
 type Parser struct {
 	filename string // filename, if any
 	buffer   []rune // file content
-	current  int    // start of the buffer, current rune
-	line     int    // current line number in rune, starting at 1
+	pos      Position
 	err      error
 }
 
@@ -24,7 +23,7 @@ func NewParserFromFile(path string) (*Parser, error) {
 
 func NewParserFromString(text string, filename string) *Parser {
 	runes := []rune(text)
-	return &Parser{filename: filename, buffer: runes, line: 1}
+	return &Parser{filename: filename, buffer: runes, pos: Position{0, 1}}
 }
 
 func (p *Parser) Parse() *HurlFile {
@@ -40,27 +39,27 @@ func (p *Parser) readRune() (rune, error) {
 	if err != nil {
 		return 0, err
 	}
-	p.current += 1
+	p.pos.Offset += 1
 	if r == '\n' {
-		p.line += 1
+		p.pos.Line += 1
 	}
 	return r, nil
 }
 
 func (p *Parser) readRunes(count int) ([]rune, error) {
-	begin := p.current
+	begin := p.pos.Offset
 	for i := 0; i < count; i++ {
 		_, err := p.readRune()
 		if err != nil {
 			return nil, err
 		}
 	}
-	end := p.current
+	end := p.pos.Offset
 	return p.buffer[begin:end], nil
 }
 
 func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
-	begin, end := p.current, p.current
+	begin, end := p.pos.Offset, p.pos.Offset
 	for {
 		r, err := p.nextRune()
 		if err != nil {
@@ -73,7 +72,7 @@ func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
 		}
 		if f(r) {
 			_, _ = p.readRune()
-			end = p.current
+			end = p.pos.Offset
 		} else {
 			break
 		}
@@ -82,23 +81,22 @@ func (p *Parser) readRunesWhile(f func(rune) bool) ([]rune, error) {
 }
 
 func (p *Parser) nextRune() (rune, error) {
-	if p.current >= len(p.buffer) {
+	if p.pos.Offset >= len(p.buffer) {
 		return 0, io.EOF
 	}
-	return p.buffer[p.current], nil
+	return p.buffer[p.pos.Offset], nil
 }
 
 func (p *Parser) nextRunes(count int) ([]rune, error) {
-	end := p.current + count
+	end := p.pos.Offset + count
 	if end > len(p.buffer) {
 		return nil, io.EOF
 	}
-	return p.buffer[p.current:end], nil
+	return p.buffer[p.pos.Offset:end], nil
 }
 
 func (p *Parser) newSyntaxError(text string) error {
-	pos := Position{p.current, p.line}
-	return &SyntaxError{text, pos}
+	return &SyntaxError{text, p.pos}
 }
 
 type SyntaxError struct {
@@ -110,6 +108,6 @@ func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d] %s", e.Pos.Line, e.msg)
 }
 
-func (p *Parser) hasRuneToRead() bool {
-	return p.current < len(p.buffer)
+func (p *Parser) left() bool {
+	return p.pos.Offset < len(p.buffer)
 }

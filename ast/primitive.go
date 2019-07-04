@@ -6,7 +6,7 @@ func (p *Parser) parseWhitespaces() *Whitespaces {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	whitespaces, err := p.readRunesWhile(isWhitespace)
 	if err != nil || len(whitespaces) == 0 {
@@ -14,18 +14,14 @@ func (p *Parser) parseWhitespaces() *Whitespaces {
 		return nil
 	}
 
-	return &Whitespaces{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(whitespaces),
-	}
+	return &Whitespaces{pos, p.pos, string(whitespaces)}
 }
 
 func (p *Parser) parseSpaces() *Spaces {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	spaces, err := p.readRunesWhile(isSpace)
 	if err != nil || len(spaces) == 0 {
@@ -33,18 +29,14 @@ func (p *Parser) parseSpaces() *Spaces {
 		return nil
 	}
 
-	return &Spaces{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(spaces),
-	}
+	return &Spaces{pos, p.pos, string(spaces)}
 }
 
 func (p *Parser) parseComment() *Comment {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	r, err := p.nextRune()
 	if p.err = err; err != nil {
@@ -56,18 +48,14 @@ func (p *Parser) parseComment() *Comment {
 	}
 	comment, _ := p.readRunesWhile(isNotNewLine)
 
-	return &Comment{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(comment),
-	}
+	return &Comment{pos, p.pos, string(comment)}
 }
 
 func (p *Parser) parseCommentLine() *CommentLine {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	comment := p.parseComment()
 	eol := p.parseEol()
@@ -77,8 +65,8 @@ func (p *Parser) parseCommentLine() *CommentLine {
 		return nil
 	}
 	return &CommentLine{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		comment,
 		eol,
 		whitespaces,
@@ -89,18 +77,14 @@ func (p *Parser) parseComments() *Comments {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	lines := p.parseNCommentLine()
 
 	if p.err != nil {
 		return nil
 	}
-	return &Comments{
-		Position{current, line},
-		Position{p.current, p.line},
-		lines,
-	}
+	return &Comments{pos, p.pos, lines}
 }
 
 func (p *Parser) parseNCommentLine() []*CommentLine {
@@ -126,7 +110,7 @@ func (p *Parser) parseJsonString() *JsonString {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	r, err := p.readRune()
 	if p.err = err; err != nil {
@@ -187,9 +171,9 @@ func (p *Parser) parseJsonString() *JsonString {
 	}
 
 	return &JsonString{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(p.buffer[current:p.current]),
+		pos,
+		p.pos,
+		string(p.buffer[pos.Offset:p.pos.Offset]),
 		string(value),
 	}
 }
@@ -198,7 +182,7 @@ func (p *Parser) parseKeyString() *KeyString {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	key, err := p.readRunesWhile(func(r rune) bool {
 		return !isWhitespace(r) && r != ':' && r != '"' && r != '#'
@@ -208,18 +192,14 @@ func (p *Parser) parseKeyString() *KeyString {
 		return nil
 	}
 
-	return &KeyString{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(key),
-	}
+	return &KeyString{pos, p.pos, string(key)}
 }
 
 func (p *Parser) parseKey() *Key {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	var keyString *KeyString
 	var jsonString *JsonString
@@ -241,8 +221,8 @@ func (p *Parser) parseKey() *Key {
 		value = jsonString.Value
 	}
 	return &Key{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		keyString,
 		jsonString,
 		value,
@@ -253,7 +233,7 @@ func (p *Parser) parseValue() *Value {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	var valueString *ValueString
 	var jsonString *JsonString
@@ -275,8 +255,8 @@ func (p *Parser) parseValue() *Value {
 		value = jsonString.Value
 	}
 	return &Value{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		valueString,
 		jsonString,
 		value,
@@ -287,7 +267,7 @@ func (p *Parser) parseColon() *Colon {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	r, err := p.readRune()
 	if err != nil || r != ':' {
@@ -295,18 +275,14 @@ func (p *Parser) parseColon() *Colon {
 		return nil
 	}
 
-	return &Colon{
-		Position{current, line},
-		Position{p.current, p.line},
-		":",
-	}
+	return &Colon{pos, p.pos, ":"}
 }
 
 func (p *Parser) parseKeyValue() *KeyValue {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	comments := p.tryParseComments()
 	key := p.parseKey()
@@ -322,8 +298,8 @@ func (p *Parser) parseKeyValue() *KeyValue {
 		return nil
 	}
 	return &KeyValue{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		comments,
 		key,
 		spaces0,
@@ -359,7 +335,7 @@ func (p *Parser) parseValueString() *ValueString {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	value := make([]rune, 0)
 	for {
@@ -394,27 +370,23 @@ func (p *Parser) parseValueString() *ValueString {
 		p.err = p.newSyntaxError("# or whitespaces is forbidden at value-string beginning")
 		return nil
 	}
-	return &ValueString{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(value),
-	}
+	return &ValueString{pos, p.pos, string(value)}
 }
 
 // must start with spaces
 func (p *Parser) isTrailingSpaces() bool {
-	current := p.current
+	offset := p.pos.Offset
 	_, err := p.readRunesWhile(isSpace)
 	if err != nil {
-		p.current = current
+		p.pos.Offset = offset
 		return true
 	}
 	n, err := p.nextRune()
 	if err != nil || isNewLine(n) || n == '#' {
-		p.current = current
+		p.pos.Offset = offset
 		return true
 	}
-	p.current = current
+	p.pos.Offset = offset
 	return false
 }
 
@@ -422,15 +394,11 @@ func (p *Parser) parseSectionHeader(section string) *SectionHeader {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 	s := fmt.Sprintf("[%s]", section)
 	if !p.tryParseString(s) {
 		p.err = p.newSyntaxError(fmt.Sprintf("[%s] is expected", section))
 		return nil
 	}
-	return &SectionHeader{
-		Position{current, line},
-		Position{p.current, p.line},
-		s,
-	}
+	return &SectionHeader{pos, p.pos, s}
 }

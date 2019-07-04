@@ -8,13 +8,13 @@ import (
 
 func TestReadRune(t *testing.T) {
 	text := `Some content`
-	parser := NewParserFromString(text, "")
+	p := NewParserFromString(text, "")
 
-	r, err := parser.readRune()
+	r, err := p.readRune()
 	assert.Nil(t, err)
 	assert.Equal(t, 'S', r, "First rune should be equal")
-	assert.Equal(t, 1, parser.current, "Parser index should be incremented")
-	assert.Equal(t, 1, parser.line, "Parser line should be equal")
+	assert.Equal(t, 1, p.pos.Offset, "Parser offset should be incremented")
+	assert.Equal(t, 1, p.pos.Line, "Parser line should be equal")
 }
 
 func TestLineCount(t *testing.T) {
@@ -22,15 +22,15 @@ func TestLineCount(t *testing.T) {
 line 2
 line 3
 line 4`
-	parser := NewParserFromString(text, "")
+	p := NewParserFromString(text, "")
 
 	for {
-		_, err := parser.readRune()
+		_, err := p.readRune()
 		if err != nil {
 			break
 		}
 	}
-	assert.Equal(t, 4, parser.line, "Parser line should be equal")
+	assert.Equal(t, 4, p.pos.Line, "Parser line should be equal")
 }
 
 func TestEndOfFile(t *testing.T) {

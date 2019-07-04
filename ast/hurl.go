@@ -8,7 +8,7 @@ func (p *Parser) parseHurlFile() *HurlFile {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	whitespaces := p.tryParseWhitespaces()
 	entries := p.parseNEntry()
@@ -16,12 +16,7 @@ func (p *Parser) parseHurlFile() *HurlFile {
 	if p.err != nil {
 		return nil
 	}
-	return &HurlFile{
-		Position{current, line},
-		Position{p.current, p.line},
-		whitespaces,
-		entries,
-	}
+	return &HurlFile{pos, p.pos, whitespaces, entries}
 }
 
 func (p *Parser) parseNEntry() []*Entry {
@@ -35,7 +30,7 @@ func (p *Parser) parseNEntry() []*Entry {
 		if p.err != nil {
 			// FIXME: for the moment, silent fail on error.
 			p.err = nil
-			if p.hasRuneToRead() {
+			if p.left() {
 				p.skipToNextEol()
 				continue
 			}
@@ -50,25 +45,21 @@ func (p *Parser) parseEntry() *Entry {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	request := p.parseRequest()
 
 	if p.err != nil {
 		return nil
 	}
-	return &Entry{
-		Position{current, line},
-		Position{p.current, p.line},
-		request,
-	}
+	return &Entry{pos, p.pos, request}
 }
 
 func (p *Parser) parseRequest() *Request {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	comments := p.tryParseComments()
 	method := p.parseMethod()
@@ -85,8 +76,8 @@ func (p *Parser) parseRequest() *Request {
 		return nil
 	}
 	return &Request{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		comments,
 		method,
 		spaces0,
@@ -104,26 +95,14 @@ func (p *Parser) parseMethod() *Method {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	methods := []string{
-		"GET",
-		"HEAD",
-		"POST",
-		"PUT",
-		"DELETE",
-		"CONNECT",
-		"OPTIONS",
-		"TRACE",
-		"PATCH",
+		"GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",
 	}
-	for _, method := range methods {
-		if p.tryParseString(method) {
-			return &Method{
-				Position{current, line},
-				Position{p.current, p.line},
-				method,
-			}
+	for _, m := range methods {
+		if p.tryParseString(m) {
+			return &Method{pos, p.pos, m}
 		}
 	}
 	p.err = p.newSyntaxError("method is expected")
@@ -134,7 +113,7 @@ func (p *Parser) parseUrl() *Url {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	isGenDelims := func(r rune) bool {
 		return r == ':' || r == '/' || r == '?' || r == '#' || r == '[' || r == ']' || r == '@'
@@ -156,18 +135,14 @@ func (p *Parser) parseUrl() *Url {
 		return nil
 	}
 
-	return &Url{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(url),
-	}
+	return &Url{pos, p.pos, string(url)}
 }
 
 func (p *Parser) parseEol() *Eol {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	eol, err := p.readRunesWhile(isNewLine)
 	if err != nil && err != io.EOF {
@@ -183,35 +158,27 @@ func (p *Parser) parseEol() *Eol {
 		_, _ = p.readRunesWhile(isWhitespace)
 	}
 
-	return &Eol{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(p.buffer[current:p.current]),
-	}
+	return &Eol{pos, p.pos, string(p.buffer[pos.Offset:p.pos.Offset])}
 }
 
 func (p *Parser) parseHeaders() *Headers {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	headers := p.parseNKeyValue()
 	if p.err != nil {
 		return nil
 	}
-	return &Headers{
-		Position{current, line},
-		Position{p.current, p.line},
-		headers,
-	}
+	return &Headers{pos, p.pos, headers,}
 }
 
 func (p *Parser) parseCookieValue() *CookieValue {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	cookie, err := p.readRunesWhile(func(r rune) bool {
 		return (r >= 'A' && r <= 'Z') ||
@@ -226,18 +193,14 @@ func (p *Parser) parseCookieValue() *CookieValue {
 		return nil
 	}
 
-	return &CookieValue{
-		Position{current, line},
-		Position{p.current, p.line},
-		string(cookie),
-	}
+	return &CookieValue{pos, p.pos, string(cookie)}
 }
 
 func (p *Parser) parseCookie() *Cookie {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	comments := p.tryParseComments()
 	key := p.parseKey()
@@ -253,8 +216,8 @@ func (p *Parser) parseCookie() *Cookie {
 		return nil
 	}
 	return &Cookie{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		comments,
 		key,
 		spaces0,
@@ -290,7 +253,7 @@ func (p *Parser) parseCookies() *Cookies {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	comments := p.tryParseComments()
 	section := p.parseSectionHeader("Cookies")
@@ -302,8 +265,8 @@ func (p *Parser) parseCookies() *Cookies {
 		return nil
 	}
 	return &Cookies{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		comments,
 		section,
 		spaces,
@@ -316,7 +279,7 @@ func (p *Parser) parseQsParams() *QsParams {
 	if p.err != nil {
 		return nil
 	}
-	current, line := p.current, p.line
+	pos := p.pos
 
 	comments := p.tryParseComments()
 	section := p.parseSectionHeader("QueryParams")
@@ -328,8 +291,8 @@ func (p *Parser) parseQsParams() *QsParams {
 		return nil
 	}
 	return &QsParams{
-		Position{current, line},
-		Position{p.current, p.line},
+		pos,
+		p.pos,
 		comments,
 		section,
 		spaces,
