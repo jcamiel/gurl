@@ -3,6 +3,7 @@ package ast
 type Position struct {
 	Offset int // offset in rune, starting at 0
 	Line   int // line number in rune, starting at 1
+	Column int // column number in rune, starting at 1
 }
 
 type (

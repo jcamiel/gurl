@@ -17,6 +17,18 @@ func TestReadRune(t *testing.T) {
 	assert.Equal(t, 1, p.pos.Line, "Parser line should be equal")
 }
 
+func TestReadRunes(t *testing.T) {
+	text := "cafe\u0301"
+	p := NewParserFromString(text, "")
+
+	r, err := p.readRunes(5)
+	assert.Nil(t, err)
+	assert.NotNil(t, r)
+	assert.Equal(t, 5, p.pos.Offset, "Parser offset should be equal")
+	assert.Equal(t, 1, p.pos.Line, "Parser line should be equal")
+	assert.Equal(t, 5, p.pos.Column, "Parser column should be equal")
+}
+
 func TestLineCount(t *testing.T) {
 	text := `Some multiline string:
 line 2

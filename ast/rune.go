@@ -41,3 +41,10 @@ func isWhitespace(r rune) bool {
 func isControlCharacter(r rune) bool {
 	return r == '\b' || r == '\f' || r == '\n' || r == '\r' || r == '\t'
 }
+
+func isCombining(r rune) bool {
+	return (r >= '\u0300' && r <= '\u036f') ||
+		(r >= '\u1ab0' && r <= '\u1aff') ||
+		(r >= '\u1dc0' && r <= '\u1dff') ||
+		(r >= '\ufe20' && r <= '\ufe2f')
+}

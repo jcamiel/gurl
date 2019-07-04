@@ -30,7 +30,8 @@ func main() {
 			log.Panic(err)
 		}
 
-		formatter := format.NewTermFormatter()
-		fmt.Print(formatter.ToText(hurl))
+		//f := format.NewTermFormatter()
+		f := format.NewJSONFormatter()
+		fmt.Print(f.ToText(hurl))
 	}
 }
