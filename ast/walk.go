@@ -42,6 +42,9 @@ func Walk(v Visitor, node Noder) {
 		if n.Cookies != nil {
 			Walk(v, n.Cookies)
 		}
+		if n.QsParams != nil {
+			Walk(v, n.QsParams)
+		}
 	case *Headers:
 		for _, h := range n.Headers {
 			Walk(v, h)
@@ -57,6 +60,18 @@ func Walk(v Visitor, node Noder) {
 		Walk(v, n.Eol)
 		for _, c := range n.Cookies {
 			Walk(v, c)
+		}
+	case *QsParams:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.SectionHeader)
+		if n.Spaces != nil {
+			Walk(v, n.Spaces)
+		}
+		Walk(v, n.Eol)
+		for _, q := range n.QsParams {
+			Walk(v, q)
 		}
 	case *Cookie:
 		if n.Comments != nil {

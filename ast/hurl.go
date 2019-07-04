@@ -11,7 +11,25 @@ func (p *Parser) parseHurlFile() *HurlFile {
 	current, line := p.current, p.line
 
 	whitespaces := p.tryParseWhitespaces()
-	var entries []*Entry
+	entries := p.parseNEntry()
+
+	if p.err != nil {
+		return nil
+	}
+	return &HurlFile{
+		Position{current, line},
+		Position{p.current, p.line},
+		whitespaces,
+		entries,
+	}
+}
+
+func (p *Parser) parseNEntry() []*Entry {
+	if p.err != nil {
+		return nil
+	}
+
+	entries := make([]*Entry, 0)
 	for {
 		e := p.parseEntry()
 		if p.err != nil {
@@ -25,16 +43,7 @@ func (p *Parser) parseHurlFile() *HurlFile {
 		}
 		entries = append(entries, e)
 	}
-
-	if p.err != nil {
-		return nil
-	}
-	return &HurlFile{
-		Position{current, line},
-		Position{p.current, p.line},
-		whitespaces,
-		entries,
-	}
+	return entries
 }
 
 func (p *Parser) parseEntry() *Entry {
@@ -70,6 +79,7 @@ func (p *Parser) parseRequest() *Request {
 	eol := p.parseEol()
 	headers := p.tryParseHeaders()
 	cookies := p.tryParseCookies()
+	qsparams := p.tryParseQsParams()
 
 	if p.err != nil {
 		return nil
@@ -86,6 +96,7 @@ func (p *Parser) parseRequest() *Request {
 		eol,
 		headers,
 		cookies,
+		qsparams,
 	}
 }
 
@@ -185,19 +196,10 @@ func (p *Parser) parseHeaders() *Headers {
 	}
 	current, line := p.current, p.line
 
-	headers := make([]*KeyValue, 0)
-	for {
-		h := p.tryParseKeyValue()
-		if h == nil {
-			break
-		}
-		headers = append(headers, h)
-	}
-	if len(headers) == 0 {
-		p.err = newSyntaxError(p, "headers are expected")
+	headers := p.parseNKeyValue()
+	if p.err != nil {
 		return nil
 	}
-
 	return &Headers{
 		Position{current, line},
 		Position{p.current, p.line},
@@ -265,6 +267,25 @@ func (p *Parser) parseCookie() *Cookie {
 	}
 }
 
+func (p *Parser) parseNCookie() []*Cookie {
+	if p.err != nil {
+		return nil
+	}
+	cookies := make([]*Cookie, 0)
+	for {
+		c := p.tryParseCookie()
+		if c == nil {
+			break
+		}
+		cookies = append(cookies, c)
+	}
+	if len(cookies) == 0 {
+		p.err = newSyntaxError(p, "At least one comment-line is expected")
+		return nil
+	}
+	return cookies
+}
+
 func (p *Parser) parseCookies() *Cookies {
 	if p.err != nil {
 		return nil
@@ -275,18 +296,7 @@ func (p *Parser) parseCookies() *Cookies {
 	section := p.parseSectionHeader("Cookies")
 	spaces := p.tryParseSpaces()
 	eol := p.parseEol()
-
-	cookies := make([]*Cookie, 0)
-	for {
-		c := p.tryParseCookie()
-		if c == nil {
-			break
-		}
-		cookies = append(cookies, c)
-	}
-	if len(cookies) > 0 {
-		p.err = nil
-	}
+	cookies := p.tryParseNCookie()
 
 	if p.err != nil {
 		return nil
@@ -299,6 +309,32 @@ func (p *Parser) parseCookies() *Cookies {
 		spaces,
 		eol,
 		cookies,
+	}
+}
+
+func (p *Parser) parseQsParams() *QsParams {
+	if p.err != nil {
+		return nil
+	}
+	current, line := p.current, p.line
+
+	comments := p.tryParseComments()
+	section := p.parseSectionHeader("QueryParams")
+	spaces := p.tryParseSpaces()
+	eol := p.parseEol()
+	params := p.tryParseNKeyValue()
+
+	if p.err != nil {
+		return nil
+	}
+	return &QsParams{
+		Position{current, line},
+		Position{p.current, p.line},
+		comments,
+		section,
+		spaces,
+		eol,
+		params,
 	}
 }
 

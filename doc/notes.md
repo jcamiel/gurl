@@ -1,4 +1,4 @@
-- revoie definition de cookie (harmoniser avec header ?)
-- cookie-value manque %
+- hurl-file: est-ce-qu'on gère 0 entry ?
+- cookies: 0 cookie ?
 
 

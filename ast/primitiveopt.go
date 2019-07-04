@@ -134,3 +134,18 @@ func (p *Parser) tryParseValueString() *ValueString {
 	}
 	return node
 }
+
+func (p *Parser) tryParseNKeyValue() []*KeyValue {
+	if p.err != nil {
+		return nil
+	}
+	current, line := p.current, p.line
+
+	node := p.parseNKeyValue()
+	if p.err != nil {
+		p.current, p.line = current, line
+		p.err = nil
+		return nil
+	}
+	return node
+}

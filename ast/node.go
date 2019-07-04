@@ -131,6 +131,7 @@ type (
 		Eol      *Eol
 		Headers  *Headers
 		Cookies  *Cookies
+		QsParams *QsParams
 	}
 
 	Method struct {
@@ -168,6 +169,16 @@ type (
 		End         Position
 		Whitespaces *Whitespaces
 		Entries     []*Entry
+	}
+
+	QsParams struct {
+		Begin         Position
+		End           Position
+		Comments      *Comments
+		SectionHeader *SectionHeader
+		Spaces        *Spaces
+		Eol           *Eol
+		QsParams      []*KeyValue
 	}
 )
 
@@ -278,4 +289,8 @@ func (c *Cookie) Node() (Position, Position) {
 
 func (c *CookieValue) Node() (Position, Position) {
 	return c.Begin, c.End
+}
+
+func (q *QsParams) Node() (Position, Position) {
+	return q.Begin, q.End
 }

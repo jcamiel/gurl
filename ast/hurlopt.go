@@ -44,3 +44,33 @@ func (p *Parser) tryParseCookie() *Cookie {
 	}
 	return node
 }
+
+func (p *Parser) tryParseNCookie() []*Cookie {
+	if p.err != nil {
+		return nil
+	}
+	current, line := p.current, p.line
+
+	node := p.parseNCookie()
+	if p.err != nil {
+		p.current, p.line = current, line
+		p.err = nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseQsParams() *QsParams {
+	if p.err != nil {
+		return nil
+	}
+	current, line := p.current, p.line
+
+	node := p.parseQsParams()
+	if p.err != nil {
+		p.current, p.line = current, line
+		p.err = nil
+		return nil
+	}
+	return node
+}

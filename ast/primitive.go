@@ -91,24 +91,35 @@ func (p *Parser) parseComments() *Comments {
 	}
 	current, line := p.current, p.line
 
-	var lines []*CommentLine
-	for {
-		c := p.tryParseCommentLine()
-		if c == nil {
-			break
-		}
-		lines = append(lines, c)
-	}
-	if len(lines) == 0 {
-		p.err = newSyntaxError(p, "comments is expected")
+	lines := p.parseNCommentLine()
+
+	if p.err != nil {
 		return nil
 	}
-
 	return &Comments{
 		Position{current, line},
 		Position{p.current, p.line},
 		lines,
 	}
+}
+
+func (p *Parser) parseNCommentLine() []*CommentLine {
+	if p.err != nil {
+		return nil
+	}
+	cls := make([]*CommentLine, 0)
+	for {
+		c := p.tryParseCommentLine()
+		if c == nil {
+			break
+		}
+		cls = append(cls, c)
+	}
+	if len(cls) == 0 {
+		p.err = newSyntaxError(p, "At least one comment-line is expected")
+		return nil
+	}
+	return cls
 }
 
 func (p *Parser) parseJsonString() *JsonString {
@@ -323,6 +334,25 @@ func (p *Parser) parseKeyValue() *KeyValue {
 		comment,
 		eol,
 	}
+}
+
+func (p *Parser) parseNKeyValue() []*KeyValue {
+	if p.err != nil {
+		return nil
+	}
+	kvs := make([]*KeyValue, 0)
+	for {
+		k := p.tryParseKeyValue()
+		if k == nil {
+			break
+		}
+		kvs = append(kvs, k)
+	}
+	if len(kvs) == 0 {
+		p.err = newSyntaxError(p, "At least one key-value is expected")
+		return nil
+	}
+	return kvs
 }
 
 func (p *Parser) parseValueString() *ValueString {
