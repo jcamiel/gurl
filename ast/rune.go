@@ -1,13 +1,7 @@
 package ast
 
 const (
-	tab            = '\u0009'
-	lineFeed       = '\u000a'
-	carriageReturn = '\u000d'
-	space          = '\u0020'
-	quotationMark  = '\u0022'
 	hash           = '\u0023'
-	reverseSolidus = '\u005c'
 )
 
 func equal(a, b []rune) bool {
@@ -36,10 +30,6 @@ func isSpace(r rune) bool {
 
 func isWhitespace(r rune) bool {
 	return isNewLine(r) || isSpace(r)
-}
-
-func isControlCharacter(r rune) bool {
-	return r == '\b' || r == '\f' || r == '\n' || r == '\r' || r == '\t'
 }
 
 func isCombining(r rune) bool {

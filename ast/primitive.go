@@ -1,6 +1,10 @@
 package ast
 
-import "fmt"
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+)
 
 func (p *Parser) parseWhitespaces() *Whitespaces {
 	if p.err != nil {
@@ -112,69 +116,26 @@ func (p *Parser) parseJsonString() *JsonString {
 	}
 	pos := p.pos
 
-	r, err := p.readRune()
+	var value string
+	rs := p.buffer[p.pos.Offset:]
+	bs := []byte(string(rs))
+	r := bytes.NewReader(bs)
+	dec := json.NewDecoder(r)
+	err := dec.Decode(&value)
 	if p.err = err; err != nil {
 		return nil
 	}
-	if r != '"' {
-		p.err = p.newSyntaxError("\" is expected at json-string beginning")
-		return nil
-	}
-	value := make([]rune, 0)
-	for {
-		chars, err := p.readRunesWhile(func(r rune) bool {
-			return r != '"' && r != '\\' && !isControlCharacter(r)
-		})
-		if p.err = err; err != nil {
-			return nil
-		}
-		value = append(value, chars...)
 
-		r, err = p.readRune()
-		if p.err = err; err != nil {
-			return nil
-		}
-		if isControlCharacter(r) {
-			p.err = p.newSyntaxError("control character not allowed in json-string")
-			return nil
-		}
-		if r == '"' {
-			break
-		}
-		// Parsing of escaped char
-		if r == '\\' {
-			r, err = p.readRune()
-			if p.err = err; err != nil {
-				return nil
-			}
-			if r == 'u' {
-				p.err = p.newSyntaxError("unicode literal not supported in json-string")
-				return nil
-			}
-			controls := map[rune]rune{
-				'"':  '"',
-				'\\': '\\',
-				'/':  '/',
-				'b':  '\b',
-				'f':  '\f',
-				'n':  '\n',
-				'r':  '\r',
-				't':  '\t',
-			}
-			c, ok := controls[r]
-			if !ok {
-				p.err = p.newSyntaxError("control characted is expected")
-				return nil
-			}
-			value = append(value, c)
-		}
-	}
+	// We have decoded a valid json string, now we can safely
+	// skip the read runes and start and end string delimiter "
+	count := len([]rune(value)) + 2
+	_, _ = p.readRunes(count)
 
 	return &JsonString{
 		pos,
 		p.pos,
 		string(p.buffer[pos.Offset:p.pos.Offset]),
-		string(value),
+		value,
 	}
 }
 

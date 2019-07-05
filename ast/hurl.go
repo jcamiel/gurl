@@ -30,7 +30,7 @@ func (p *Parser) parseNEntry() []*Entry {
 		if p.err != nil {
 			// FIXME: for the moment, silent fail on error.
 			p.err = nil
-			if p.isLeft() {
+			if p.more() {
 				p.skipToNextEol()
 				continue
 			}

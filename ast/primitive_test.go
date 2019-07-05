@@ -126,11 +126,15 @@ func TestParseJsonString(t *testing.T) {
 		error         bool
 	}{
 		{text: `"abcdef 012345"`, expectedValue: "abcdef 012345"},
+		{text: `"abcd"toto`, expectedValue: "abcd"},
 		{text: `"abc\ndef"`, expectedValue: "abc\ndef"},
 		{text: `"abc\"def"`, expectedValue: "abc\"def"},
+		{text: `"abc\ud83d\udca9"`, expectedValue: "abc💩"},
 		{text: `abc`, error: true},
 		{text: `"abc`, error: true},
-		{text: `"abc\ud83d\udca9"`, error: true},
+		{text: `{"id":"123"}`, error: true},
+		{text: `true`, error: true},
+		{text: "\"abcdef\n012345\"", error: true},
 	}
 
 	for _, test := range tests {
@@ -138,6 +142,7 @@ func TestParseJsonString(t *testing.T) {
 			p = NewParserFromString(test.text, "")
 			node = p.parseJsonString()
 			if !test.error {
+				assert.NotNil(t, node)
 				assert.Equal(t, test.expectedValue, node.Value)
 				assert.Nil(t, p.Err())
 			} else {

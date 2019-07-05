@@ -115,6 +115,6 @@ func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", e.Pos.Line, e.Pos.Column, e.Msg)
 }
 
-func (p *Parser) isLeft() bool {
+func (p *Parser) more() bool {
 	return p.pos.Offset < len(p.buffer)
 }
