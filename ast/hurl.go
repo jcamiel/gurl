@@ -71,6 +71,7 @@ func (p *Parser) parseRequest() *Request {
 	headers := p.tryParseHeaders()
 	cookies := p.tryParseCookies()
 	qsparams := p.tryParseQsParams()
+	formparams := p.tryParseFormParams()
 
 	if p.err != nil {
 		return nil
@@ -88,6 +89,7 @@ func (p *Parser) parseRequest() *Request {
 		headers,
 		cookies,
 		qsparams,
+		formparams,
 	}
 }
 
@@ -215,19 +217,7 @@ func (p *Parser) parseCookie() *Cookie {
 	if p.err != nil {
 		return nil
 	}
-	return &Cookie{
-		pos,
-		p.pos,
-		comments,
-		key,
-		spaces0,
-		colon,
-		spaces1,
-		cookieValue,
-		spaces2,
-		comment,
-		eol,
-	}
+	return &Cookie{pos, p.pos, comments, key, spaces0, colon, spaces1, cookieValue, spaces2, comment, eol}
 }
 
 func (p *Parser) parseNCookie() []*Cookie {
@@ -264,15 +254,7 @@ func (p *Parser) parseCookies() *Cookies {
 	if p.err != nil {
 		return nil
 	}
-	return &Cookies{
-		pos,
-		p.pos,
-		comments,
-		section,
-		spaces,
-		eol,
-		cookies,
-	}
+	return &Cookies{pos, p.pos, comments, section, spaces, eol, cookies}
 }
 
 func (p *Parser) parseQsParams() *QsParams {
@@ -290,15 +272,25 @@ func (p *Parser) parseQsParams() *QsParams {
 	if p.err != nil {
 		return nil
 	}
-	return &QsParams{
-		pos,
-		p.pos,
-		comments,
-		section,
-		spaces,
-		eol,
-		params,
+	return &QsParams{pos, p.pos, comments, section, spaces, eol, params}
+}
+
+func (p *Parser) parseFormParams() *FormParams {
+	if p.err != nil {
+		return nil
 	}
+	pos := p.pos
+
+	comments := p.tryParseComments()
+	section := p.parseSectionHeader("FormParams")
+	spaces := p.tryParseSpaces()
+	eol := p.parseEol()
+	params := p.tryParseNKeyValue()
+
+	if p.err != nil {
+		return nil
+	}
+	return &FormParams{pos, p.pos, comments, section, spaces, eol, params}
 }
 
 // Specific debug

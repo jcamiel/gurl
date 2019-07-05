@@ -69,3 +69,17 @@ func (p *Parser) tryParseQsParams() *QsParams {
 	}
 	return node
 }
+
+func (p *Parser) tryParseFormParams() *FormParams {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseFormParams()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}

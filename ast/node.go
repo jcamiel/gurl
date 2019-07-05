@@ -121,18 +121,19 @@ type (
 	}
 
 	Request struct {
-		Begin    Position
-		End      Position
-		Comments *Comments
-		Method   *Method
-		Spaces0  *Spaces
-		Url      *Url
-		Spaces1  *Spaces
-		Comment  *Comment
-		Eol      *Eol
-		Headers  *Headers
-		Cookies  *Cookies
-		QsParams *QsParams
+		Begin      Position
+		End        Position
+		Comments   *Comments
+		Method     *Method
+		Spaces0    *Spaces
+		Url        *Url
+		Spaces1    *Spaces
+		Comment    *Comment
+		Eol        *Eol
+		Headers    *Headers
+		Cookies    *Cookies
+		QsParams   *QsParams
+		FormParams *FormParams
 	}
 
 	Method struct {
@@ -179,7 +180,17 @@ type (
 		SectionHeader *SectionHeader
 		Spaces        *Spaces
 		Eol           *Eol
-		QsParams      []*KeyValue
+		Params        []*KeyValue
+	}
+
+	FormParams struct {
+		Begin         Position
+		End           Position
+		Comments      *Comments
+		SectionHeader *SectionHeader
+		Spaces        *Spaces
+		Eol           *Eol
+		Params        []*KeyValue
 	}
 )
 
@@ -294,4 +305,8 @@ func (c *CookieValue) Node() (Position, Position) {
 
 func (q *QsParams) Node() (Position, Position) {
 	return q.Begin, q.End
+}
+
+func (f *FormParams) Node() (Position, Position) {
+	return f.Begin, f.End
 }
