@@ -1,4 +1,4 @@
-package format
+package print
 
 import (
 	"github.com/logrusorgru/aurora"
@@ -6,26 +6,26 @@ import (
 	"strings"
 )
 
-type TermFormatter struct {
+type TermPrinter struct {
 	text string
 }
 
-func NewTermFormatter() *TermFormatter {
-	f := TermFormatter{}
+func NewTermPrinter() *TermPrinter {
+	f := TermPrinter{}
 	return &f
 }
 
-func (p *TermFormatter) ToText(hurlFile *ast.HurlFile) string {
+func (p *TermPrinter) Print(hurlFile *ast.HurlFile) string {
 	p.text = ""
 	ast.Walk(p, hurlFile)
 	return p.text
 }
 
-func (p *TermFormatter) Visit(node ast.Noder) ast.Visitor {
+func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 
 	switch n := node.(type) {
 	case *ast.Eol:
-		p.text +=aurora.Gray(3, visualizeWhitespaces(n.Value)).String()
+		p.text += aurora.Gray(3, visualizeWhitespaces(n.Value)).String()
 		return nil
 	case *ast.Whitespaces:
 		p.text += aurora.Gray(3, visualizeWhitespaces(n.Value)).String()

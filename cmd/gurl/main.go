@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gurl/ast"
-	"gurl/format"
+	"gurl/print"
 	"log"
 	"os"
 )
@@ -20,18 +20,18 @@ func main() {
 
 	for _, file := range os.Args[1:] {
 
-		p, err := ast.NewParserFromFile(file)
+		parser, err := ast.NewParserFromFile(file)
 		if err != nil {
 			log.Panic(err)
 		}
 
-		hurl := p.Parse()
-		if err := p.Err(); err != nil {
+		hurl := parser.Parse()
+		if err := parser.Err(); err != nil {
 			log.Panic(err)
 		}
 
-		//f := format.NewTermFormatter()
-		f := format.NewJSONFormatter()
-		fmt.Print(f.ToText(hurl))
+		printer := print.NewTermPrinter()
+		//printer := print.NewJSONPrinter()
+		fmt.Print(printer.Print(hurl))
 	}
 }

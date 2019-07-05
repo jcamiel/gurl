@@ -1,25 +1,25 @@
-package format
+package print
 
 import (
 	"gurl/ast"
 )
 
-type PlainFormatter struct {
+type PlainPrinter struct {
 	text string
 }
 
-func NewPlainFormatter() *PlainFormatter {
-	return &PlainFormatter{}
+func NewPlainPrinter() *PlainPrinter {
+	return &PlainPrinter{}
 }
 
 
-func (p *PlainFormatter) ToText(hurlFile *ast.HurlFile) string {
+func (p *PlainPrinter) Print(hurlFile *ast.HurlFile) string {
 	p.text = ""
 	ast.Walk(p, hurlFile)
 	return p.text
 }
 
-func (p *PlainFormatter) Visit(node ast.Noder) ast.Visitor {
+func (p *PlainPrinter) Visit(node ast.Noder) ast.Visitor {
 
 	switch n := node.(type) {
 	case *ast.Eol:
