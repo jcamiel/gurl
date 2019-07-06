@@ -195,6 +195,7 @@ type (
 		Comment  *Comment
 		Eol      *Eol
 		Headers  *Headers
+		Captures *Captures
 	}
 
 	Version struct {
@@ -217,11 +218,33 @@ type (
 
 	Query struct {
 		Node
-		Spaces0 *Spaces
+		Spaces0   *Spaces
 		QueryType *QueryType
-		Space1 *Spaces
+		Spaces1   *Spaces
 		QueryExpr *QueryExpr
-		Spaces2 *Spaces
+		Spaces2   *Spaces
+	}
+
+	Capture struct {
+		Node
+		Comments *Comments
+		Key      *Key
+		Spaces0  *Spaces
+		Colon    *Colon
+		Spaces1  *Spaces
+		Query    *Query
+		Spaces2  *Spaces
+		Comment  *Comment
+		Eol      *Eol
+	}
+
+	Captures struct {
+		Node
+		Comments      *Comments
+		SectionHeader *SectionHeader
+		Spaces        *Spaces
+		Eol           *Eol
+		Captures      []*Capture
 	}
 )
 

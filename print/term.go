@@ -25,6 +25,7 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.Body:
 		p.text += visualizeWhitespaces(n.Text)
+		return nil
 	case *ast.Eol:
 		p.text += visualizeWhitespaces(n.Value)
 		return nil
@@ -60,6 +61,9 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	case *ast.JsonString:
 		p.text += aurora.Green(n.Text).String()
 		return nil
+	case *ast.QueryString:
+		p.text += aurora.Green(n.Value).String()
+		return nil
 	case *ast.CookieValue:
 		p.text += aurora.Green(n.Value).String()
 		return nil
@@ -71,8 +75,13 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 		return nil
 	case *ast.Version:
 		p.text += n.Value
+		return nil
 	case *ast.Status:
-		p.text += aurora.Index(214, n.Text).String()
+		p.text += aurora.Index(39, n.Text).String()
+		return nil
+	case *ast.QueryType:
+		p.text += aurora.Cyan(n.Value).String()
+		return nil
 	}
 	return p
 }

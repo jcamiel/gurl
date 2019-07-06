@@ -348,17 +348,29 @@ func TestParseBase64(t *testing.T) {
 		decoded string
 		error   bool
 	}{
-		{encoded: `base64,V2VsY29tZSBodXJsIQ==;`, decoded: "Welcome hurl!"},
-		{encoded: `base64,V2VsY29tZSBodXJsIQ==;XXXX`, decoded: "Welcome hurl!"},
-		{encoded: `base64,TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz
+		{
+			encoded: `base64,V2VsY29tZSBodXJsIQ==;`,
+			decoded: "Welcome hurl!",
+		},
+		{
+			encoded: `base64,V2VsY29tZSBodXJsIQ==;XXXX`,
+			decoded: "Welcome hurl!",
+		},
+		{
+			encoded: `base64,TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz
 IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg
 dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu
 dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo
-ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=;`, decoded:"Man is distinguished, not only by his reason," +
-			" but by this singular passion from other animals, which is a lust of the mind, that by a perseverance" +
-			" of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of" +
-			" any carnal pleasure."},
-		{encoded: `base64,V2VsY29tZSBodXJsIQ==`, error: true},
+ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=;`,
+			decoded: "Man is distinguished, not only by his reason," +
+				" but by this singular passion from other animals, which is a lust of the mind, that by a perseverance" +
+				" of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of" +
+				" any carnal pleasure.",
+		},
+		{
+			encoded: `base64,V2VsY29tZSBodXJsIQ==`,
+			error: true,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.encoded, func(t *testing.T) {
@@ -374,4 +386,32 @@ ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=;`, decoded:"Man is dist
 		})
 	}
 
+}
+
+func TestParseQueryString(t *testing.T) {
+	var p *Parser
+
+	var tests = []struct {
+		query    string
+		expected string
+		error    bool
+	}{
+		{
+			query:    `normalize-space(//meta[@name='_csrf_token']/@content)`,
+			expected: `normalize-space(//meta[@name='_csrf_token']/@content)`,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.query, func(t *testing.T) {
+			p = NewParserFromString(test.query, "")
+			node := p.parseQueryString()
+			if !test.error {
+				assert.Equal(t, test.expected, node.Value)
+				assert.Nil(t, p.Err())
+			} else {
+				assert.Nil(t, node)
+				assert.NotNil(t, p.Err())
+			}
+		})
+	}
 }

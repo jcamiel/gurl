@@ -5,4 +5,4 @@
 - est-ce-que ca vaut le coup de définir base64, ou json ou json-string ou xml ?
 - comment on traite whitespaces entre request et reponse
 - query-expr: est-ce-qu'on peut utiliser une key-string ? Différence par rapport à une 
-value string
+value string. ESt-ce-qu'on peut dire tout ascii plutot que A-Za-z0-9

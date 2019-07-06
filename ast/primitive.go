@@ -417,10 +417,10 @@ func (p *Parser) parseQueryString() *QueryString {
 	pos := p.pos
 
 	s, err := p.readRunesWhile(func(r rune) bool {
-		return isAsciiLetter(r) || isDigit(r)
+		return r >= '!' && r <= '~'
 	})
 	if err != nil {
-		p.err = p.newSyntaxError("[A-Za-z0-9] char is expected in query")
+		p.err = p.newSyntaxError("ascii char is expected in query")
 		return nil
 	}
 

@@ -112,3 +112,44 @@ func (p *Parser) tryParseResponse() *Response {
 	return node
 }
 
+func (p *Parser) tryParseCapture() *Capture {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseCapture()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseNCapture() []*Capture {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseNCapture()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseCaptures() *Captures {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseCaptures()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}

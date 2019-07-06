@@ -115,6 +115,7 @@ func (p *Parser) parseResponse() *Response {
 	comment := p.tryParseComment()
 	eol := p.parseEol()
 	headers := p.tryParseHeaders()
+	captures := p.tryParseCaptures()
 
 	if p.err != nil {
 		return nil
@@ -129,6 +130,7 @@ func (p *Parser) parseResponse() *Response {
 		comment,
 		eol,
 		headers,
+		captures,
 	}
 }
 
@@ -285,7 +287,7 @@ func (p *Parser) parseNCookie() []*Cookie {
 		cookies = append(cookies, c)
 	}
 	if len(cookies) == 0 {
-		p.err = p.newSyntaxError("At least one comment-line is expected")
+		p.err = p.newSyntaxError("At least one cookie is expected")
 		return nil
 	}
 	return cookies
@@ -430,4 +432,63 @@ func (p *Parser) parseQuery() *Query {
 		return nil
 	}
 	return &Query{Node{pos, p.pos}, spaces0, qt, spaces1, expr, spaces2}
+}
+
+func (p *Parser) parseCapture() *Capture {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	comments := p.tryParseComments()
+	key := p.parseKey()
+	spaces0 := p.tryParseSpaces()
+	colon := p.parseColon()
+	spaces1 := p.tryParseSpaces()
+	query := p.parseQuery()
+	spaces2 := p.tryParseSpaces()
+	comment := p.tryParseComment()
+	eol := p.parseEol()
+
+	if p.err != nil {
+		return nil
+	}
+	return &Capture{Node{pos, p.pos}, comments, key, spaces0, colon, spaces1, query, spaces2, comment, eol}
+}
+
+func (p *Parser) parseCaptures() *Captures {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	comments := p.tryParseComments()
+	section := p.parseSectionHeader("Captures")
+	spaces := p.tryParseSpaces()
+	eol := p.parseEol()
+	captures := p.tryParseNCapture()
+
+	if p.err != nil {
+		return nil
+	}
+	return &Captures{Node{pos, p.pos}, comments, section, spaces, eol, captures}
+}
+
+func (p *Parser) parseNCapture() []*Capture {
+	if p.err != nil {
+		return nil
+	}
+	captures := make([]*Capture, 0)
+	for {
+		c := p.tryParseCapture()
+		if c == nil {
+			break
+		}
+		captures = append(captures, c)
+	}
+	if len(captures) == 0 {
+		p.err = p.newSyntaxError("At least one capture is expected")
+		return nil
+	}
+	return captures
 }

@@ -74,9 +74,65 @@ func Walk(v Visitor, node Noder) {
 		if n.Headers != nil {
 			Walk(v, n.Headers)
 		}
+		if n.Captures != nil {
+			Walk(v, n.Captures)
+		}
 	case *Headers:
 		for _, h := range n.Headers {
 			Walk(v, h)
+		}
+	case *Captures:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.SectionHeader)
+		if n.Spaces != nil {
+			Walk(v, n.Spaces)
+		}
+		Walk(v, n.Eol)
+		for _, c := range n.Captures {
+			Walk(v, c)
+		}
+	case *Capture:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.Key)
+		if n.Spaces0 != nil {
+			Walk(v, n.Spaces0)
+		}
+		Walk(v, n.Colon)
+		if n.Spaces1 != nil {
+			Walk(v, n.Spaces1)
+		}
+		Walk(v, n.Query)
+		if n.Spaces2 != nil {
+			Walk(v, n.Spaces2)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
+		Walk(v, n.Eol)
+	case *Query:
+		if n.Spaces0 != nil {
+			Walk(v, n.Spaces0)
+		}
+		Walk(v, n.QueryType)
+		if n.Spaces1 != nil {
+			Walk(v, n.Spaces1)
+		}
+		if n.QueryExpr != nil {
+			Walk(v, n.QueryExpr)
+		}
+		if n.Spaces2 != nil {
+			Walk(v, n.Spaces2)
+		}
+	case *QueryExpr:
+		if n.QueryString != nil {
+			Walk(v, n.QueryString)
+		}
+		if n.JsonString != nil {
+			Walk(v, n.JsonString)
 		}
 	case *Cookies:
 		if n.Comments != nil {
@@ -179,7 +235,7 @@ func Walk(v Visitor, node Noder) {
 			Walk(v, n.Whitespaces)
 		}
 	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *JsonString, *ValueString, *Colon,
-		*SectionHeader, *CookieValue, *Body, *Version, *Status:
+		*SectionHeader, *CookieValue, *Body, *Version, *Status, *QueryType, *QueryString:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))
