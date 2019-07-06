@@ -181,6 +181,7 @@ type (
 	Body struct {
 		Node
 		Text  string
+		Value []byte
 	}
 )
 

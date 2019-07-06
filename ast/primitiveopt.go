@@ -139,3 +139,31 @@ func (p *Parser) tryParseNKeyValue() []*KeyValue {
 	}
 	return node
 }
+
+func (p *Parser) tryParseJson() (value Json, text string) {
+	if p.err != nil {
+		return nil, ""
+	}
+	pos := p.pos
+
+	value, text = p.parseJson()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil, ""
+	}
+	return
+}
+
+func (p *Parser) tryParseXml() string {
+	if p.err != nil {
+		return ""
+	}
+	pos := p.pos
+
+	text := p.parseXml()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return ""
+	}
+	return text
+}

@@ -305,9 +305,16 @@ func (p *Parser) parseBody() *Body {
 	}
 	pos := p.pos
 
-	_, text := p.parseJson()
-	if p.err != nil {
-		return nil
+	obj, text := p.tryParseJson()
+	if obj != nil {
+		return &Body{Node{pos, p.pos}, text, []byte(text)}
 	}
-	return &Body{Node{pos, p.pos}, text}
+	// TODO: `parseXml` should return an obj plus a text
+	text = p.tryParseXml()
+	if len(text) > 0 {
+		return &Body{Node{pos, p.pos}, text, []byte(text)}
+	}
+
+	p.err = p.newSyntaxError("body json, xml, base64 or file is expected")
+	return nil
 }

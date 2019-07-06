@@ -39,13 +39,21 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 		p.text += aurora.Gray(13, n.Value).String()
 		return nil
 	case *ast.Url:
-		p.text += aurora.Yellow(n.Value).String()
+		p.text += aurora.Cyan(n.Value).String()
 		return nil
 	case *ast.Method:
-		p.text += aurora.Magenta(n.Value).String()
+		p.text += aurora.Index(214, n.Value).String()
+		return nil
+	case *ast.Key:
+		if n.KeyString != nil {
+			p.text += n.Value
+		}
+		if n.JsonString != nil {
+			p.text += n.Value
+		}
 		return nil
 	case *ast.KeyString:
-		p.text += aurora.Cyan(n.Value).String()
+		p.text += aurora.Green(n.Value).String()
 		return nil
 	case *ast.ValueString:
 		p.text += aurora.Green(n.Value).String()
@@ -60,7 +68,7 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 		p.text += n.Value
 		return nil
 	case *ast.SectionHeader:
-		p.text += aurora.Blue(n.Value).String()
+		p.text += aurora.Magenta(n.Value).String()
 		return nil
 	}
 	return p
