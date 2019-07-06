@@ -3,7 +3,9 @@ package ast
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"io/ioutil"
 )
 
 func (p *Parser) parseWhitespaces() *Whitespaces {
@@ -14,11 +16,11 @@ func (p *Parser) parseWhitespaces() *Whitespaces {
 
 	whitespaces, err := p.readRunesWhile(isWhitespace)
 	if err != nil || len(whitespaces) == 0 {
-		p.err = p.newSyntaxError("space, tab or newline is expected at whitespaces beginning")
+		p.err = p.newSyntaxError("space, tab or newline is expected in whitespaces")
 		return nil
 	}
 
-	return &Whitespaces{pos, p.pos, string(whitespaces)}
+	return &Whitespaces{Node{pos, p.pos}, string(whitespaces)}
 }
 
 func (p *Parser) parseSpaces() *Spaces {
@@ -29,11 +31,11 @@ func (p *Parser) parseSpaces() *Spaces {
 
 	spaces, err := p.readRunesWhile(isSpace)
 	if err != nil || len(spaces) == 0 {
-		p.err = p.newSyntaxError("space or tab is expected at spaces beginning")
+		p.err = p.newSyntaxError("space or tab is expected in spaces")
 		return nil
 	}
 
-	return &Spaces{pos, p.pos, string(spaces)}
+	return &Spaces{Node{pos, p.pos}, string(spaces)}
 }
 
 func (p *Parser) parseComment() *Comment {
@@ -52,7 +54,7 @@ func (p *Parser) parseComment() *Comment {
 	}
 	comment, _ := p.readRunesWhile(isNotNewLine)
 
-	return &Comment{pos, p.pos, string(comment)}
+	return &Comment{Node{pos, p.pos}, string(comment)}
 }
 
 func (p *Parser) parseCommentLine() *CommentLine {
@@ -68,13 +70,7 @@ func (p *Parser) parseCommentLine() *CommentLine {
 	if p.err != nil {
 		return nil
 	}
-	return &CommentLine{
-		pos,
-		p.pos,
-		comment,
-		eol,
-		whitespaces,
-	}
+	return &CommentLine{Node{pos, p.pos}, comment, eol, whitespaces}
 }
 
 func (p *Parser) parseComments() *Comments {
@@ -88,7 +84,7 @@ func (p *Parser) parseComments() *Comments {
 	if p.err != nil {
 		return nil
 	}
-	return &Comments{pos, p.pos, lines}
+	return &Comments{Node{pos, p.pos}, lines}
 }
 
 func (p *Parser) parseNCommentLine() []*CommentLine {
@@ -116,27 +112,16 @@ func (p *Parser) parseJsonString() *JsonString {
 	}
 	pos := p.pos
 
-	var value string
-	rs := p.buffer[p.pos.Offset:]
-	bs := []byte(string(rs))
-	r := bytes.NewReader(bs)
-	dec := json.NewDecoder(r)
-	err := dec.Decode(&value)
-	if p.err = err; err != nil {
+	obj, text := p.parseJson()
+	if p.err != nil {
 		return nil
 	}
-
-	// We have decoded a valid json string, now we can safely
-	// skip the read runes and start and end string delimiter "
-	count := len([]rune(value)) + 2
-	_, _ = p.readRunes(count)
-
-	return &JsonString{
-		pos,
-		p.pos,
-		string(p.buffer[pos.Offset:p.pos.Offset]),
-		value,
+	switch value := obj.(type) {
+	case string:
+		return &JsonString{Node{pos, p.pos}, text, value}
 	}
+	p.err = p.newSyntaxError("string object is expected in json-string")
+	return nil
 }
 
 func (p *Parser) parseKeyString() *KeyString {
@@ -149,11 +134,11 @@ func (p *Parser) parseKeyString() *KeyString {
 		return !isWhitespace(r) && r != ':' && r != '"' && r != '#'
 	})
 	if err != nil || len(key) == 0 {
-		p.err = p.newSyntaxError("char is expected at key-string beginning")
+		p.err = p.newSyntaxError("char is expected in key-string")
 		return nil
 	}
 
-	return &KeyString{pos, p.pos, string(key)}
+	return &KeyString{Node{pos, p.pos}, string(key)}
 }
 
 func (p *Parser) parseKey() *Key {
@@ -169,7 +154,7 @@ func (p *Parser) parseKey() *Key {
 	if keyString == nil {
 		jsonString = p.parseJsonString()
 		if p.err != nil {
-			p.err = p.newSyntaxError("key-string or json-string is expected at key beginning")
+			p.err = p.newSyntaxError("key-string or json-string is expected in key")
 			return nil
 		}
 	}
@@ -181,13 +166,7 @@ func (p *Parser) parseKey() *Key {
 	if jsonString != nil {
 		value = jsonString.Value
 	}
-	return &Key{
-		pos,
-		p.pos,
-		keyString,
-		jsonString,
-		value,
-	}
+	return &Key{Node{pos, p.pos}, keyString, jsonString, value}
 }
 
 func (p *Parser) parseValue() *Value {
@@ -203,7 +182,7 @@ func (p *Parser) parseValue() *Value {
 	if valueString == nil {
 		jsonString = p.parseJsonString()
 		if p.err != nil {
-			p.err = p.newSyntaxError("key-string or json-string is expected at key beginning")
+			p.err = p.newSyntaxError("key-string or json-string is expected in key")
 			return nil
 		}
 	}
@@ -216,8 +195,7 @@ func (p *Parser) parseValue() *Value {
 		value = jsonString.Value
 	}
 	return &Value{
-		pos,
-		p.pos,
+		Node{pos, p.pos},
 		valueString,
 		jsonString,
 		value,
@@ -236,7 +214,7 @@ func (p *Parser) parseColon() *Colon {
 		return nil
 	}
 
-	return &Colon{pos, p.pos, ":"}
+	return &Colon{Node{pos, p.pos}, ":"}
 }
 
 func (p *Parser) parseKeyValue() *KeyValue {
@@ -259,8 +237,7 @@ func (p *Parser) parseKeyValue() *KeyValue {
 		return nil
 	}
 	return &KeyValue{
-		pos,
-		p.pos,
+		Node{pos, p.pos},
 		comments,
 		key,
 		spaces0,
@@ -286,7 +263,7 @@ func (p *Parser) parseNKeyValue() []*KeyValue {
 		kvs = append(kvs, k)
 	}
 	if len(kvs) == 0 {
-		p.err = p.newSyntaxError("At least one key-value is expected")
+		p.err = p.newSyntaxError("key-value is expected")
 		return nil
 	}
 	return kvs
@@ -331,7 +308,61 @@ func (p *Parser) parseValueString() *ValueString {
 		p.err = p.newSyntaxError("# or whitespaces is forbidden at value-string beginning")
 		return nil
 	}
-	return &ValueString{pos, p.pos, string(value)}
+	return &ValueString{Node{pos, p.pos}, string(value)}
+}
+
+func (p *Parser) parseJson() (value Json, text string) {
+	if p.err != nil {
+		return nil, ""
+	}
+
+	rs := p.buffer[p.pos.Offset:]
+	bs := []byte(string(rs))
+	size := len(bs)
+	r := bytes.NewReader(bs)
+	dec := json.NewDecoder(r)
+	err := dec.Decode(&value)
+	if p.err = err; err != nil {
+		return nil, ""
+	}
+
+	// Count the number of bytes read by the json parsing
+	// and convert the number of bytes read to the number of rune
+	// read so we can advance the parser.
+	remaining, err := ioutil.ReadAll(dec.Buffered())
+	if p.err = err; err != nil {
+		return nil, ""
+	}
+	readBytes := size - r.Len() - len(remaining)
+	text = string(bs[:readBytes])
+	runes := []rune(text)
+	_, _ = p.readRunes(len(runes))
+	return
+}
+
+func (p *Parser) parseXml() string {
+	if p.err != nil {
+		return ""
+	}
+
+	var value interface{}
+	rs := p.buffer[p.pos.Offset:]
+	bs := []byte(string(rs))
+	r := bytes.NewReader(bs)
+	dec := xml.NewDecoder(r)
+	err := dec.Decode(&value)
+	if p.err = err; err != nil {
+		return ""
+	}
+
+	// Count the number of bytes read by the xml parsing
+	// and convert the number of bytes read to the number of rune
+	// read so we can advance the parser.
+	readBytes := dec.InputOffset()
+	text := string(bs[:readBytes])
+	runes := []rune(text)
+	_, _ = p.readRunes(len(runes))
+	return text
 }
 
 // must start with spaces
@@ -361,5 +392,5 @@ func (p *Parser) parseSectionHeader(section string) *SectionHeader {
 		p.err = p.newSyntaxError(fmt.Sprintf("[%s] is expected", section))
 		return nil
 	}
-	return &SectionHeader{pos, p.pos, s}
+	return &SectionHeader{Node{pos, p.pos}, s}
 }

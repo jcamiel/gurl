@@ -6,14 +6,20 @@ type Position struct {
 	Column int // column number in rune, starting at 1
 }
 
+type Node struct {
+	Begin Position
+	End   Position
+}
+
 type (
+
 	Noder interface {
-		Node() (Position, Position)
+		GetBegin() Position
+		GetEnd() Position
 	}
 
 	Cookies struct {
-		Begin         Position
-		End           Position
+		Node
 		Comments      *Comments
 		SectionHeader *SectionHeader
 		Spaces        *Spaces
@@ -22,8 +28,7 @@ type (
 	}
 
 	Cookie struct {
-		Begin       Position
-		End         Position
+		Node
 		Comments    *Comments
 		Key         *Key
 		Spaces0     *Spaces
@@ -36,26 +41,22 @@ type (
 	}
 
 	CookieValue struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Headers struct {
-		Begin   Position
-		End     Position
+		Node
 		Headers []*KeyValue
 	}
 
 	Colon struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	KeyValue struct {
-		Begin    Position
-		End      Position
+		Node
 		Comments *Comments
 		Key      *Key
 		Spaces0  *Spaces
@@ -68,61 +69,52 @@ type (
 	}
 
 	Key struct {
-		Begin      Position
-		End        Position
+		Node
 		KeyString  *KeyString
 		JsonString *JsonString
 		Value      string
 	}
 
 	Value struct {
-		Begin       Position
-		End         Position
+		Node
 		ValueString *ValueString
 		JsonString  *JsonString
 		Value       string
 	}
 
 	JsonString struct {
-		Begin Position
-		End   Position
+		Node
 		Text  string
 		Value string
 	}
 
 	KeyString struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	ValueString struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Eol struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Spaces struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Whitespaces struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Request struct {
-		Begin      Position
-		End        Position
+		Node
 		Comments   *Comments
 		Method     *Method
 		Spaces0    *Spaces
@@ -134,48 +126,42 @@ type (
 		Cookies    *Cookies
 		QsParams   *QsParams
 		FormParams *FormParams
+		Body       *Body
 	}
 
 	Method struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Url struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Comment struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
 
 	Comments struct {
-		Begin        Position
-		End          Position
+		Node
 		CommentLines []*CommentLine
 	}
 
 	Entry struct {
-		Begin   Position
-		End     Position
+		Node
 		Request *Request
 	}
 
 	HurlFile struct {
-		Begin       Position
-		End         Position
+		Node
 		Whitespaces *Whitespaces
 		Entries     []*Entry
 	}
 
 	QsParams struct {
-		Begin         Position
-		End           Position
+		Node
 		Comments      *Comments
 		SectionHeader *SectionHeader
 		Spaces        *Spaces
@@ -184,129 +170,43 @@ type (
 	}
 
 	FormParams struct {
-		Begin         Position
-		End           Position
+		Node
 		Comments      *Comments
 		SectionHeader *SectionHeader
 		Spaces        *Spaces
 		Eol           *Eol
 		Params        []*KeyValue
 	}
+
+	Body struct {
+		Node
+		Text  string
+	}
 )
 
 // Node not defined in the hurl spec,
 type (
 	CommentLine struct {
-		Begin       Position
-		End         Position
+		Node
 		Comment     *Comment
 		Eol         *Eol
 		Whitespaces *Whitespaces
 	}
 
 	SectionHeader struct {
-		Begin Position
-		End   Position
+		Node
 		Value string
 	}
+
+	Json = interface{}
+
+	Xml = interface{}
 )
 
-func (h *HurlFile) Node() (Position, Position) {
-	return h.Begin, h.End
+func (n *Node) GetBegin() Position {
+	return n.Begin
 }
 
-func (w *Whitespaces) Node() (Position, Position) {
-	return w.Begin, w.End
-}
-
-func (e *Entry) Node() (Position, Position) {
-	return e.Begin, e.End
-}
-
-func (r *Request) Node() (Position, Position) {
-	return r.Begin, r.End
-}
-
-func (c *Comments) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (m *Method) Node() (Position, Position) {
-	return m.Begin, m.End
-}
-
-func (s *Spaces) Node() (Position, Position) {
-	return s.Begin, s.End
-}
-
-func (c *CommentLine) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (c *Comment) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (e *Eol) Node() (Position, Position) {
-	return e.Begin, e.End
-}
-
-func (u *Url) Node() (Position, Position) {
-	return u.Begin, u.End
-}
-
-func (h *Headers) Node() (Position, Position) {
-	return h.Begin, h.End
-}
-
-func (k *KeyValue) Node() (Position, Position) {
-	return k.Begin, k.End
-}
-
-func (k *Key) Node() (Position, Position) {
-	return k.Begin, k.End
-}
-
-func (c *Colon) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (v *Value) Node() (Position, Position) {
-	return v.Begin, v.End
-}
-
-func (k *KeyString) Node() (Position, Position) {
-	return k.Begin, k.End
-}
-
-func (j *JsonString) Node() (Position, Position) {
-	return j.Begin, j.End
-}
-
-func (v *ValueString) Node() (Position, Position) {
-	return v.Begin, v.End
-}
-
-func (c *Cookies) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (s *SectionHeader) Node() (Position, Position) {
-	return s.Begin, s.End
-}
-
-func (c *Cookie) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (c *CookieValue) Node() (Position, Position) {
-	return c.Begin, c.End
-}
-
-func (q *QsParams) Node() (Position, Position) {
-	return q.Begin, q.End
-}
-
-func (f *FormParams) Node() (Position, Position) {
-	return f.Begin, f.End
+func (n *Node) GetEnd() Position {
+	return n.End
 }

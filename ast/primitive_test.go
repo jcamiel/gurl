@@ -12,7 +12,7 @@ func TestParseWhitespaces(t *testing.T) {
 	var tests = []struct {
 		text         string
 		expectedText string
-		start        Position
+		begin        Position
 		end          Position
 	}{
 		{
@@ -28,7 +28,7 @@ func TestParseWhitespaces(t *testing.T) {
 			p = NewParserFromString(test.text, "")
 			node = p.parseWhitespaces()
 			assert.Nil(t, p.Err())
-			assert.Equal(t, &Whitespaces{test.start, test.end, test.expectedText}, node, "Whitespaces should be parsed")
+			assert.Equal(t, &Whitespaces{Node{test.begin, test.end}, test.expectedText}, node, "Whitespaces should be parsed")
 		})
 	}
 }
@@ -40,7 +40,7 @@ func TestParseOptionalWhitespaces(t *testing.T) {
 
 	node := p.tryParseWhitespaces()
 	assert.Nil(t, p.Err())
-	assert.Equal(t, &Whitespaces{Position{0, 1, 1}, Position{3, 2, 1}, "\u0020\u0020\n"}, node, "Whitespaces should be parsed")
+	assert.Equal(t, &Whitespaces{Node{Position{0, 1, 1}, Position{3, 2, 1}}, "\u0020\u0020\n"}, node, "Whitespaces should be parsed")
 	assert.Equal(t, 3, p.pos.Offset, "offset should be equal")
 	assert.Equal(t, 2, p.pos.Line, "line should be equal")
 
@@ -133,6 +133,7 @@ func TestParseJsonString(t *testing.T) {
 		{text: `abc`, error: true},
 		{text: `"abc`, error: true},
 		{text: `{"id":"123"}`, error: true},
+		{text: `{"id": 0,"selected": true}`, error: true},
 		{text: `true`, error: true},
 		{text: "\"abcdef\n012345\"", error: true},
 	}
@@ -268,4 +269,73 @@ func TestParseSectionHeader(t *testing.T) {
 	node = p.parseSectionHeader("Cookies")
 	assert.NotNil(t, node)
 	assert.Nil(t, p.Err())
+}
+
+func TestJson(t *testing.T) {
+	var node Json
+	var p *Parser
+
+	var tests = []struct {
+		text  string
+		error bool
+	}{
+		{text: `{
+	"id": 0,
+    "name": "Frieda",
+    "picture": "images/scottish-terrier.jpeg",
+    "age": 3,
+    "breed": "Scottish Terrier",
+    "location": "Lisco, Alabama"} xxxxxxxx`},
+		{text: `{"id": 0,"selected": true}`},
+		{text: `true xxxxx`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p = NewParserFromString(test.text, "")
+			node, _ = p.parseJson()
+			if !test.error {
+				assert.NotNil(t, node)
+				assert.Nil(t, p.Err())
+			} else {
+				assert.Nil(t, node)
+				assert.NotNil(t, p.Err())
+			}
+		})
+	}
+}
+
+func TestXml(t *testing.T) {
+	var p *Parser
+	var xml string
+
+	var tests = []struct {
+		text  string
+		error bool
+	}{
+		{text: `<catalog>
+   <book id="bk101">
+      <author>Gambardella, Matthew</author>
+      <title>XML Developer's Guide</title>
+      <genre>Computer</genre>
+      <price>44.95</price>
+      <publish_date>2000-10-01</publish_date>
+      <description>An in-depth look at creating applications 
+      with XML.</description>
+   </book>
+</catalog>-----`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p = NewParserFromString(test.text, "")
+			xml = p.parseXml()
+			if !test.error {
+				assert.Equal(t, 334, len(xml))
+				assert.Nil(t, p.Err())
+			} else {
+				assert.NotNil(t, p.Err())
+			}
+		})
+	}
 }

@@ -83,3 +83,17 @@ func (p *Parser) tryParseFormParams() *FormParams {
 	}
 	return node
 }
+
+func (p *Parser) tryParseBody() *Body {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseBody()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}

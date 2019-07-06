@@ -16,7 +16,7 @@ func (p *Parser) parseHurlFile() *HurlFile {
 	if p.err != nil {
 		return nil
 	}
-	return &HurlFile{pos, p.pos, whitespaces, entries}
+	return &HurlFile{Node{pos, p.pos}, whitespaces, entries}
 }
 
 func (p *Parser) parseNEntry() []*Entry {
@@ -52,7 +52,7 @@ func (p *Parser) parseEntry() *Entry {
 	if p.err != nil {
 		return nil
 	}
-	return &Entry{pos, p.pos, request}
+	return &Entry{Node{pos, p.pos}, request}
 }
 
 func (p *Parser) parseRequest() *Request {
@@ -71,14 +71,19 @@ func (p *Parser) parseRequest() *Request {
 	headers := p.tryParseHeaders()
 	cookies := p.tryParseCookies()
 	qsparams := p.tryParseQsParams()
-	formparams := p.tryParseFormParams()
+
+	var formparams *FormParams
+	var body *Body
+	formparams = p.tryParseFormParams()
+	if formparams == nil {
+		body = p.tryParseBody()
+	}
 
 	if p.err != nil {
 		return nil
 	}
 	return &Request{
-		pos,
-		p.pos,
+		Node{pos, p.pos},
 		comments,
 		method,
 		spaces0,
@@ -90,6 +95,7 @@ func (p *Parser) parseRequest() *Request {
 		cookies,
 		qsparams,
 		formparams,
+		body,
 	}
 }
 
@@ -104,7 +110,7 @@ func (p *Parser) parseMethod() *Method {
 	}
 	for _, m := range methods {
 		if p.tryParseString(m) {
-			return &Method{pos, p.pos, m}
+			return &Method{Node{pos, p.pos}, m}
 		}
 	}
 	p.err = p.newSyntaxError("method is expected")
@@ -137,7 +143,7 @@ func (p *Parser) parseUrl() *Url {
 		return nil
 	}
 
-	return &Url{pos, p.pos, string(url)}
+	return &Url{Node{pos, p.pos}, string(url)}
 }
 
 func (p *Parser) parseEol() *Eol {
@@ -160,7 +166,7 @@ func (p *Parser) parseEol() *Eol {
 		_, _ = p.readRunesWhile(isWhitespace)
 	}
 
-	return &Eol{pos, p.pos, string(p.buffer[pos.Offset:p.pos.Offset])}
+	return &Eol{Node{pos, p.pos}, string(p.buffer[pos.Offset:p.pos.Offset])}
 }
 
 func (p *Parser) parseHeaders() *Headers {
@@ -173,7 +179,7 @@ func (p *Parser) parseHeaders() *Headers {
 	if p.err != nil {
 		return nil
 	}
-	return &Headers{pos, p.pos, headers,}
+	return &Headers{Node{pos, p.pos}, headers,}
 }
 
 func (p *Parser) parseCookieValue() *CookieValue {
@@ -191,11 +197,11 @@ func (p *Parser) parseCookieValue() *CookieValue {
 			r == '%'
 	})
 	if err != nil {
-		p.err = p.newSyntaxError("[A-Za-z0-9:/%] char is expected for cookie-value")
+		p.err = p.newSyntaxError("[A-Za-z0-9:/%] char is expected in cookie-value")
 		return nil
 	}
 
-	return &CookieValue{pos, p.pos, string(cookie)}
+	return &CookieValue{Node{pos, p.pos}, string(cookie)}
 }
 
 func (p *Parser) parseCookie() *Cookie {
@@ -217,7 +223,7 @@ func (p *Parser) parseCookie() *Cookie {
 	if p.err != nil {
 		return nil
 	}
-	return &Cookie{pos, p.pos, comments, key, spaces0, colon, spaces1, cookieValue, spaces2, comment, eol}
+	return &Cookie{Node{pos, p.pos}, comments, key, spaces0, colon, spaces1, cookieValue, spaces2, comment, eol}
 }
 
 func (p *Parser) parseNCookie() []*Cookie {
@@ -254,7 +260,7 @@ func (p *Parser) parseCookies() *Cookies {
 	if p.err != nil {
 		return nil
 	}
-	return &Cookies{pos, p.pos, comments, section, spaces, eol, cookies}
+	return &Cookies{Node{pos, p.pos}, comments, section, spaces, eol, cookies}
 }
 
 func (p *Parser) parseQsParams() *QsParams {
@@ -272,7 +278,7 @@ func (p *Parser) parseQsParams() *QsParams {
 	if p.err != nil {
 		return nil
 	}
-	return &QsParams{pos, p.pos, comments, section, spaces, eol, params}
+	return &QsParams{Node{pos, p.pos}, comments, section, spaces, eol, params}
 }
 
 func (p *Parser) parseFormParams() *FormParams {
@@ -290,11 +296,18 @@ func (p *Parser) parseFormParams() *FormParams {
 	if p.err != nil {
 		return nil
 	}
-	return &FormParams{pos, p.pos, comments, section, spaces, eol, params}
+	return &FormParams{Node{pos, p.pos}, comments, section, spaces, eol, params}
 }
 
-// Specific debug
-func (p *Parser) skipToNextEol() {
-	_, _ = p.readRunesWhile(isNotNewLine)
-	_ = p.parseWhitespaces()
+func (p *Parser) parseBody() *Body {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	_, text := p.parseJson()
+	if p.err != nil {
+		return nil
+	}
+	return &Body{Node{pos, p.pos}, text}
 }

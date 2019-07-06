@@ -48,6 +48,9 @@ func Walk(v Visitor, node Noder) {
 		if n.FormParams != nil {
 			Walk(v, n.FormParams)
 		}
+		if n.Body != nil {
+			Walk(v, n.Body)
+		}
 	case *Headers:
 		for _, h := range n.Headers {
 			Walk(v, h)
@@ -153,7 +156,7 @@ func Walk(v Visitor, node Noder) {
 			Walk(v, n.Whitespaces)
 		}
 	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *JsonString, *ValueString, *Colon,
-		*SectionHeader, *CookieValue:
+		*SectionHeader, *CookieValue, *Body:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

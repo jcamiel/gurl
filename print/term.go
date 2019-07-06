@@ -24,6 +24,8 @@ func (p *TermPrinter) Print(hurlFile *ast.HurlFile) string {
 func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 
 	switch n := node.(type) {
+	case *ast.Body:
+		p.text += n.Text
 	case *ast.Eol:
 		p.text += aurora.Gray(3, visualizeWhitespaces(n.Value)).String()
 		return nil

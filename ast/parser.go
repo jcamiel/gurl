@@ -118,3 +118,9 @@ func (e *SyntaxError) Error() string {
 func (p *Parser) more() bool {
 	return p.pos.Offset < len(p.buffer)
 }
+
+// Specific debug
+func (p *Parser) skipToNextEol() {
+	_, _ = p.readRunesWhile(isNotNewLine)
+	_ = p.parseWhitespaces()
+}

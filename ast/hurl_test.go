@@ -11,8 +11,7 @@ func TestParseMethodSucceed(t *testing.T) {
 	node := p.parseMethod()
 	assert.Nil(t, p.Err())
 	assert.Equal(t, &Method{
-		Position{0, 1, 1},
-		Position{4, 1, 5},
+		Node{Position{0, 1, 1}, Position{4, 1, 5}},
 		"POST",
 	}, node, "POST should be parsed")
 }
@@ -137,4 +136,38 @@ func TestCookies( t *testing.T) {
 	node = p.parseCookies()
 	assert.NotNil(t, node)
 	assert.Nil(t, p.Err())
+}
+
+func TestBody(t *testing.T) {
+	var node *Body
+	var p *Parser
+
+	var tests = []struct {
+		text  string
+		error bool
+	}{
+		{text: `{
+	"id": 0,
+    "name": "Frieda",
+    "picture": "images/scottish-terrier.jpeg",
+    "age": 3,
+    "breed": "Scottish Terrier",
+    "location": "Lisco, Alabama"} xxxxxxxx`},
+		{text: `{"id": 0,"selected": true}`},
+		{text: `true xxxxx`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p = NewParserFromString(test.text, "")
+			node = p.parseBody()
+			if !test.error {
+				assert.NotNil(t, node)
+				assert.Nil(t, p.Err())
+			} else {
+				assert.Nil(t, node)
+				assert.NotNil(t, p.Err())
+			}
+		})
+	}
 }
