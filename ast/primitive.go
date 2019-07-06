@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -318,9 +319,8 @@ func (p *Parser) parseJson() (value Json, text string) {
 
 	rs := p.buffer[p.pos.Offset:]
 	bs := []byte(string(rs))
-	size := len(bs)
-	r := bytes.NewReader(bs)
-	dec := json.NewDecoder(r)
+	reader := bytes.NewReader(bs)
+	dec := json.NewDecoder(reader)
 	err := dec.Decode(&value)
 	if p.err = err; err != nil {
 		return nil, ""
@@ -333,7 +333,7 @@ func (p *Parser) parseJson() (value Json, text string) {
 	if p.err = err; err != nil {
 		return nil, ""
 	}
-	readBytes := size - r.Len() - len(remaining)
+	readBytes := len(bs) - reader.Len() - len(remaining)
 	text = string(bs[:readBytes])
 	runes := []rune(text)
 	_, _ = p.readRunes(len(runes))
@@ -348,8 +348,8 @@ func (p *Parser) parseXml() string {
 	var value interface{}
 	rs := p.buffer[p.pos.Offset:]
 	bs := []byte(string(rs))
-	r := bytes.NewReader(bs)
-	dec := xml.NewDecoder(r)
+	reader := bytes.NewReader(bs)
+	dec := xml.NewDecoder(reader)
 	err := dec.Decode(&value)
 	if p.err = err; err != nil {
 		return ""
@@ -363,6 +363,31 @@ func (p *Parser) parseXml() string {
 	runes := []rune(text)
 	_, _ = p.readRunes(len(runes))
 	return text
+}
+
+func (p *Parser) parseBase64() (value []byte, text string) {
+	if p.err != nil {
+		return nil, ""
+	}
+	pos := p.pos
+
+	if !p.tryParseString("base64,") {
+		p.err = p.newSyntaxError("base64, is expected at base64 body start")
+		return nil, ""
+	}
+	runes, err := p.readRunesWhile(func(r rune) bool {
+		return r != ';'
+	})
+	bs, err := base64.StdEncoding.DecodeString(string(runes))
+	if p.err = err; err != nil {
+		return nil, ""
+	}
+	r, err := p.readRune()
+	if err != nil || r != ';' {
+		p.err = p.newSyntaxError("; is expected at base64 body end")
+		return nil, ""
+	}
+	return bs, string(p.buffer[pos.Offset:p.pos.Offset])
 }
 
 // must start with spaces

@@ -314,6 +314,10 @@ func (p *Parser) parseBody() *Body {
 	if len(text) > 0 {
 		return &Body{Node{pos, p.pos}, text, []byte(text)}
 	}
+	bs, text := p.tryParseBase64()
+	if bs != nil {
+		return &Body{Node{pos, p.pos}, text, bs}
+	}
 
 	p.err = p.newSyntaxError("body json, xml, base64 or file is expected")
 	return nil

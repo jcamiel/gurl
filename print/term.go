@@ -22,18 +22,17 @@ func (p *TermPrinter) Print(hurlFile *ast.HurlFile) string {
 }
 
 func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
-
 	switch n := node.(type) {
 	case *ast.Body:
-		p.text += n.Text
+		p.text += visualizeWhitespaces(n.Text)
 	case *ast.Eol:
-		p.text += aurora.Gray(3, visualizeWhitespaces(n.Value)).String()
+		p.text += visualizeWhitespaces(n.Value)
 		return nil
 	case *ast.Whitespaces:
-		p.text += aurora.Gray(3, visualizeWhitespaces(n.Value)).String()
+		p.text += visualizeWhitespaces(n.Value)
 		return nil
 	case *ast.Spaces:
-		p.text += aurora.Gray(3, visualizeWhitespaces(n.Value)).String()
+		p.text += visualizeWhitespaces(n.Value)
 		return nil
 	case *ast.Comment:
 		p.text += aurora.Gray(13, n.Value).String()
@@ -75,8 +74,13 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 }
 
 func visualizeWhitespaces(s string) string {
-	s = strings.ReplaceAll(s, " ", "_")
-	s = strings.ReplaceAll(s, "\n", "\u21b5\n")
-	s = strings.ReplaceAll(s, "\t", "\u2192   ")
+	whites := map[string]string{
+		" ":  "_",
+		"\n": "\u21b5\n",
+		"\t": "\u2192   ",
+	}
+	for src, dst := range whites {
+		s = strings.ReplaceAll(s, src, aurora.Gray(3, dst).String())
+	}
 	return s
 }

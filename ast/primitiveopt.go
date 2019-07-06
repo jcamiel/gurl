@@ -167,3 +167,17 @@ func (p *Parser) tryParseXml() string {
 	}
 	return text
 }
+
+func (p *Parser) tryParseBase64() (value []byte, text string) {
+	if p.err != nil {
+		return nil, ""
+	}
+	pos := p.pos
+
+	value, text = p.parseBase64()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil, ""
+	}
+	return
+}
