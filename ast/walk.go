@@ -22,6 +22,12 @@ func Walk(v Visitor, node Noder) {
 		}
 	case *Entry:
 		Walk(v, n.Request)
+		if n.Whitespaces != nil {
+			Walk(v, n.Whitespaces)
+		}
+		if n.Response != nil {
+			Walk(v, n.Response)
+		}
 	case *Request:
 		if n.Comments != nil {
 			Walk(v, n.Comments)
@@ -50,6 +56,23 @@ func Walk(v Visitor, node Noder) {
 		}
 		if n.Body != nil {
 			Walk(v, n.Body)
+		}
+	case *Response:
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
+		Walk(v, n.Version)
+		Walk(v, n.Spaces0)
+		Walk(v, n.Status)
+		if n.Spaces1 != nil {
+			Walk(v, n.Spaces1)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
+		Walk(v, n.Eol)
+		if n.Headers != nil {
+			Walk(v, n.Headers)
 		}
 	case *Headers:
 		for _, h := range n.Headers {
@@ -156,7 +179,7 @@ func Walk(v Visitor, node Noder) {
 			Walk(v, n.Whitespaces)
 		}
 	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *JsonString, *ValueString, *Colon,
-		*SectionHeader, *CookieValue, *Body:
+		*SectionHeader, *CookieValue, *Body, *Version, *Status:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

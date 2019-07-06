@@ -97,3 +97,18 @@ func (p *Parser) tryParseBody() *Body {
 	}
 	return node
 }
+
+func (p *Parser) tryParseResponse() *Response {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseResponse()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+

@@ -12,7 +12,6 @@ type Node struct {
 }
 
 type (
-
 	Noder interface {
 		GetBegin() Position
 		GetEnd() Position
@@ -151,7 +150,9 @@ type (
 
 	Entry struct {
 		Node
-		Request *Request
+		Request  *Request
+		Whitespaces *Whitespaces
+		Response *Response
 	}
 
 	HurlFile struct {
@@ -182,6 +183,29 @@ type (
 		Node
 		Text  string
 		Value []byte
+	}
+
+	Response struct {
+		Node
+		Comments *Comments
+		Version  *Version
+		Spaces0  *Spaces
+		Status   *Status
+		Spaces1  *Spaces
+		Comment  *Comment
+		Eol      *Eol
+		Headers  *Headers
+	}
+
+	Version struct {
+		Node
+		Value string
+	}
+
+	Status struct {
+		Node
+		Text  string
+		Value int
 	}
 )
 

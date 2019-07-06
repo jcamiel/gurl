@@ -32,6 +32,10 @@ func isWhitespace(r rune) bool {
 	return isNewLine(r) || isSpace(r)
 }
 
+func isDigit(r rune) bool {
+	return r >= '0' && r <= '9'
+}
+
 func isCombining(r rune) bool {
 	return (r >= '\u0300' && r <= '\u036f') ||
 		(r >= '\u1ab0' && r <= '\u1aff') ||

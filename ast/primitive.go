@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 func (p *Parser) parseWhitespaces() *Whitespaces {
@@ -389,6 +390,26 @@ func (p *Parser) parseBase64() (value []byte, text string) {
 	}
 	return bs, string(p.buffer[pos.Offset:p.pos.Offset])
 }
+
+func (p *Parser) parseNatural() (value int, text string) {
+	if p.err != nil {
+		return 0, ""
+	}
+	digits, err := p.readRunesWhile(isDigit)
+	if err != nil || len(digits) == 0 {
+		p.err = p.newSyntaxError("0-9 is expected")
+		return 0, ""
+	}
+
+	text = string(digits)
+	value, err = strconv.Atoi(text)
+	if err != nil {
+		p.err = p.newSyntaxError("0-9 is expected")
+		return 0, ""
+	}
+	return
+}
+
 
 // must start with spaces
 func (p *Parser) isTrailingSpaces() bool {

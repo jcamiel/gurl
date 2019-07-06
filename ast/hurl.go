@@ -48,11 +48,13 @@ func (p *Parser) parseEntry() *Entry {
 	pos := p.pos
 
 	request := p.parseRequest()
+	whitespaces := p.tryParseWhitespaces()
+	response := p.tryParseResponse()
 
 	if p.err != nil {
 		return nil
 	}
-	return &Entry{Node{pos, p.pos}, request}
+	return &Entry{Node{pos, p.pos}, request, whitespaces, response}
 }
 
 func (p *Parser) parseRequest() *Request {
@@ -99,6 +101,37 @@ func (p *Parser) parseRequest() *Request {
 	}
 }
 
+func (p *Parser) parseResponse() *Response {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	comments := p.tryParseComments()
+	version := p.parseVersion()
+	spaces0 := p.parseSpaces()
+	status := p.parseStatus()
+	spaces1 := p.tryParseSpaces()
+	comment := p.tryParseComment()
+	eol := p.parseEol()
+	headers := p.tryParseHeaders()
+
+	if p.err != nil {
+		return nil
+	}
+	return &Response{
+		Node{pos, p.pos},
+		comments,
+		version,
+		spaces0,
+		status,
+		spaces1,
+		comment,
+		eol,
+		headers,
+	}
+}
+
 func (p *Parser) parseMethod() *Method {
 	if p.err != nil {
 		return nil
@@ -111,6 +144,22 @@ func (p *Parser) parseMethod() *Method {
 	for _, m := range methods {
 		if p.tryParseString(m) {
 			return &Method{Node{pos, p.pos}, m}
+		}
+	}
+	p.err = p.newSyntaxError("method is expected")
+	return nil
+}
+
+func (p *Parser) parseVersion() *Version {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	methods := []string{"HTTP/1.1", "HTTP/2"}
+	for _, v := range methods {
+		if p.tryParseString(v) {
+			return &Version{Node{pos, p.pos}, v}
 		}
 	}
 	p.err = p.newSyntaxError("method is expected")
@@ -321,4 +370,16 @@ func (p *Parser) parseBody() *Body {
 
 	p.err = p.newSyntaxError("body json, xml, base64 or file is expected")
 	return nil
+}
+
+func (p *Parser) parseStatus() *Status {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+	value, text := p.parseNatural()
+	if p.err != nil {
+		return nil
+	}
+	return &Status{Node{pos, p.pos}, text, value}
 }

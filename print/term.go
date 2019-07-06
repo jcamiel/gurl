@@ -69,6 +69,10 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	case *ast.SectionHeader:
 		p.text += aurora.Magenta(n.Value).String()
 		return nil
+	case *ast.Version:
+		p.text += n.Value
+	case *ast.Status:
+		p.text += aurora.Index(214, n.Text).String()
 	}
 	return p
 }
