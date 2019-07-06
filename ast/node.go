@@ -150,9 +150,9 @@ type (
 
 	Entry struct {
 		Node
-		Request  *Request
+		Request     *Request
 		Whitespaces *Whitespaces
-		Response *Response
+		Response    *Response
 	}
 
 	HurlFile struct {
@@ -207,6 +207,22 @@ type (
 		Text  string
 		Value int
 	}
+
+	QueryExpr struct {
+		Node
+		QueryString *QueryString
+		JsonString  *JsonString
+		Value       string
+	}
+
+	Query struct {
+		Node
+		Spaces0 *Spaces
+		QueryType *QueryType
+		Space1 *Spaces
+		QueryExpr *QueryExpr
+		Spaces2 *Spaces
+	}
 )
 
 // Node not defined in the hurl spec,
@@ -219,6 +235,16 @@ type (
 	}
 
 	SectionHeader struct {
+		Node
+		Value string
+	}
+
+	QueryString struct {
+		Node
+		Value string
+	}
+
+	QueryType struct {
 		Node
 		Value string
 	}

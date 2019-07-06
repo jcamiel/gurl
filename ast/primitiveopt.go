@@ -181,3 +181,17 @@ func (p *Parser) tryParseBase64() (value []byte, text string) {
 	}
 	return
 }
+
+func (p *Parser) tryParseQueryString() *QueryString {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseQueryString()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}

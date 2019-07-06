@@ -180,9 +180,7 @@ func (p *Parser) parseUrl() *Url {
 			r == '*' || r == '+' || r == ',' || r == ';' || r == '='
 	}
 	url, err := p.readRunesWhile(func(r rune) bool {
-		isAlpha := (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
-		isDigit := r >= '0' && r <= '9'
-		isUnreserved := isAlpha || isDigit || r == '-' || r == '.' || r == '_' || r == '~'
+		isUnreserved := isAsciiLetter(r) || isDigit(r) || r == '-' || r == '.' || r == '_' || r == '~'
 		isReserved := isGenDelims(r) || isSubDelims(r)
 		isHurlSpecific := r == '{' || r == '}'
 		return isReserved || isUnreserved || isHurlSpecific
@@ -238,9 +236,8 @@ func (p *Parser) parseCookieValue() *CookieValue {
 	pos := p.pos
 
 	cookie, err := p.readRunesWhile(func(r rune) bool {
-		return (r >= 'A' && r <= 'Z') ||
-			(r >= 'a' && r <= 'z') ||
-			(r >= '0' && r <= '9') ||
+		return isAsciiLetter(r) ||
+			isDigit(r) ||
 			r == ':' ||
 			r == '/' ||
 			r == '%'
@@ -382,4 +379,55 @@ func (p *Parser) parseStatus() *Status {
 		return nil
 	}
 	return &Status{Node{pos, p.pos}, text, value}
+}
+
+func (p *Parser) parseQueryExpr() *QueryExpr {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	var queryString *QueryString
+	var jsonString *JsonString
+
+	queryString = p.tryParseQueryString()
+	if queryString == nil {
+		jsonString = p.parseJsonString()
+		if p.err != nil {
+			p.err = p.newSyntaxError("query-string or json-string is expected in key")
+			return nil
+		}
+	}
+
+	var value string
+	if queryString != nil {
+		value = queryString.Value
+	}
+	if jsonString != nil {
+		value = jsonString.Value
+	}
+	return &QueryExpr{Node{pos, p.pos}, queryString, jsonString, value}
+}
+
+func (p *Parser) parseQuery() *Query {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	spaces0 := p.tryParseSpaces()
+	qt := p.parseQueryType()
+	var spaces1 *Spaces
+	var expr *QueryExpr
+	switch qt.Value {
+	case "header", "xpath", "jsonpath", "regex":
+		spaces1 = p.parseSpaces()
+		expr = p.parseQueryExpr()
+	}
+	spaces2 := p.tryParseSpaces()
+
+	if p.err != nil {
+		return nil
+	}
+	return &Query{Node{pos, p.pos}, spaces0, qt, spaces1, expr, spaces2}
 }

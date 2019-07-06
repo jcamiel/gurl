@@ -13,6 +13,11 @@ type Parser struct {
 	err      error
 }
 
+type SyntaxError struct {
+	Msg string   // description of error
+	Pos Position // error occurred after reading Offset bytes
+}
+
 func NewParserFromFile(path string) (*Parser, error) {
 	dat, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -102,21 +107,16 @@ func (p *Parser) nextRunes(count int) ([]rune, error) {
 	return p.buffer[p.pos.Offset:end], nil
 }
 
+func (p *Parser) more() bool {
+	return p.pos.Offset < len(p.buffer)
+}
+
 func (p *Parser) newSyntaxError(text string) error {
 	return &SyntaxError{text, p.pos}
 }
 
-type SyntaxError struct {
-	Msg string   // description of error
-	Pos Position // error occurred after reading Offset bytes
-}
-
 func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", e.Pos.Line, e.Pos.Column, e.Msg)
-}
-
-func (p *Parser) more() bool {
-	return p.pos.Offset < len(p.buffer)
 }
 
 // Specific debug

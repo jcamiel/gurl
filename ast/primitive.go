@@ -410,6 +410,38 @@ func (p *Parser) parseNatural() (value int, text string) {
 	return
 }
 
+func (p *Parser) parseQueryString() *QueryString {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	s, err := p.readRunesWhile(func(r rune) bool {
+		return isAsciiLetter(r) || isDigit(r)
+	})
+	if err != nil {
+		p.err = p.newSyntaxError("[A-Za-z0-9] char is expected in query")
+		return nil
+	}
+
+	return &QueryString{Node{pos, p.pos}, string(s)}
+}
+
+func (p *Parser) parseQueryType() *QueryType {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	types := []string{"status", "header", "body", "xpath", "jsonpath", "regex"}
+	for _, t := range types {
+		if p.tryParseString(t) {
+			return &QueryType{Node{pos, p.pos}, t}
+		}
+	}
+	p.err = p.newSyntaxError("method is expected")
+	return nil
+}
 
 // must start with spaces
 func (p *Parser) isTrailingSpaces() bool {

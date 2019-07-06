@@ -36,6 +36,10 @@ func isDigit(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
+func isAsciiLetter(r rune) bool {
+	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')
+}
+
 func isCombining(r rune) bool {
 	return (r >= '\u0300' && r <= '\u036f') ||
 		(r >= '\u1ab0' && r <= '\u1aff') ||
