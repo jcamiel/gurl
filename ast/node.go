@@ -159,6 +159,7 @@ type (
 		Node
 		Whitespaces *Whitespaces
 		Entries     []*Entry
+		Comments    *Comments
 	}
 
 	QsParams struct {

@@ -115,8 +115,9 @@ func (p *Parser) nextRunesMax(count int) ([]rune, error) {
 	return p.buffer[p.pos.Offset:end], nil
 }
 
-func (p *Parser) more() bool {
-	return p.pos.Offset < len(p.buffer)
+// Number of runes left to parse
+func (p *Parser) left() int {
+	return len(p.buffer) - p.pos.Offset
 }
 
 func (p *Parser) newSyntaxError(text string) error {

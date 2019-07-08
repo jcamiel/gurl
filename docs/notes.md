@@ -10,3 +10,4 @@ value string. ESt-ce-qu'on peut dire tout ascii plutot que A-Za-z0-9
 - est-ce-qu'on traite le cas avec [Sections] et pas de section ?
 - spaces dans la query ? dans l'assert il y a un space mandatory qui
 ne peut pas être satisfait
+- qs-params: QueryStringParams comme nom de section

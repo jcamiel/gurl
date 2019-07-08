@@ -13,16 +13,24 @@ func (p *Parser) parseHurlFile() *HurlFile {
 
 	whitespaces := p.tryParseWhitespaces()
 	entries := p.tryParseNEntry()
+	comments := p.tryParseComments()
+
 	if p.err != nil {
 		return nil
 	}
-	if p.more() {
-		runes, _ := p.nextRunesMax(10)
-		p.err = p.newSyntaxError(fmt.Sprintf("unexpected text %s", string(runes)))
+	if p.left() > 0 {
+		runes, _ := p.readRunesWhile(isNotNewLine)
+		var msg string
+		if len(runes) > 40 {
+			msg = string(runes[:40]) + "..."
+		} else {
+			msg = string(runes)
+		}
+		p.err = p.newSyntaxError(fmt.Sprintf("unexpected text \"%s\"", msg))
 		return nil
 	}
 
-	return &HurlFile{Node{pos, p.pos}, whitespaces, entries}
+	return &HurlFile{Node{pos, p.pos}, whitespaces, entries, comments}
 }
 
 func (p *Parser) parseNEntry() []*Entry {
@@ -326,7 +334,7 @@ func (p *Parser) parseQsParams() *QsParams {
 	pos := p.pos
 
 	comments := p.tryParseComments()
-	section := p.parseSectionHeader("QueryParams")
+	section := p.parseSectionHeader("QueryStringParams")
 	spaces := p.tryParseSpaces()
 	eol := p.parseEol()
 	params := p.tryParseNKeyValue()

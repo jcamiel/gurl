@@ -76,15 +76,25 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	case *ast.Version:
 		p.text += n.Value
 		return nil
-	case *ast.Natural:
-		p.text += aurora.Index(39, n.Text).String()
-		return nil
 	case *ast.QueryType:
 		p.text += aurora.Cyan(n.Value).String()
 		return nil
 	case *ast.PredicateType:
 		p.text += aurora.Index(214, n.Value).String()
 		return nil
+	case *ast.Natural:
+		p.text += aurora.Index(39, n.Text).String()
+		return nil
+	case *ast.Integer:
+		p.text += aurora.Index(39, n.Text).String()
+		return nil
+	case *ast.Bool:
+		p.text += aurora.Index(39, n.Text).String()
+		return nil
+	case *ast.Float:
+		p.text += aurora.Index(39, n.Text).String()
+		return nil
+
 	}
 	return p
 }

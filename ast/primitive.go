@@ -488,6 +488,16 @@ func (p *Parser) parseQueryString() *QueryString {
 	}
 	pos := p.pos
 
+	r, err := p.nextRune()
+	if err != nil {
+		p.err = p.newSyntaxError("char is expected in query")
+		return nil
+	}
+	if r == '"' {
+		p.err =  p.newSyntaxError("\" is not allowed at query-string beginning")
+		return nil
+	}
+
 	s, err := p.readRunesWhile(func(r rune) bool {
 		return r >= '!' && r <= '~'
 	})

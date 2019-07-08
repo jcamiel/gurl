@@ -18,16 +18,20 @@ func main() {
 	}
 	flag.Parse()
 
+	l := log.New(os.Stderr, "", 0)
+
 	for _, file := range os.Args[1:] {
 
 		parser, err := ast.NewParserFromFile(file)
 		if err != nil {
-			log.Panic(err)
+			l.Println(err)
+			os.Exit(1)
 		}
 
 		hurl := parser.Parse()
 		if err := parser.Err(); err != nil {
-			log.Panic(err)
+			l.Println(err)
+			os.Exit(1)
 		}
 
 		printer := print.NewTermPrinter()
