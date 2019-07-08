@@ -217,11 +217,11 @@ type (
 
 	Query struct {
 		Node
-		Spaces0   *Spaces
-		QueryType *QueryType
-		Spaces1   *Spaces
-		QueryExpr *QueryExpr
-		Spaces2   *Spaces
+		Spaces0 *Spaces
+		Type    *QueryType
+		Spaces1 *Spaces
+		Expr    *QueryExpr
+		Spaces2 *Spaces
 	}
 
 	Capture struct {
@@ -264,6 +264,22 @@ type (
 		Value float64
 	}
 
+	Bool struct {
+		Node
+		Text string
+		Value bool
+	}
+
+	Predicate struct {
+		Node
+		Type *PredicateType
+		Spaces *Spaces
+		Integer *Integer
+		Float *Float
+		Bool *Bool
+		JsonString *JsonString
+	}
+
 )
 
 // Node not defined in the hurl spec,
@@ -286,6 +302,11 @@ type (
 	}
 
 	QueryType struct {
+		Node
+		Value string
+	}
+
+	PredicateType struct {
 		Node
 		Value string
 	}

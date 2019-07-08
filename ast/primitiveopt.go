@@ -195,3 +195,45 @@ func (p *Parser) tryParseQueryString() *QueryString {
 	}
 	return node
 }
+
+func (p *Parser) tryParseInteger() *Integer {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseInteger()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseFloat() *Float {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseFloat()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseBool() *Bool {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseBool()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}

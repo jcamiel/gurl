@@ -389,26 +389,19 @@ func (p *Parser) parseQueryExpr() *QueryExpr {
 	}
 	pos := p.pos
 
-	var queryString *QueryString
-	var jsonString *JsonString
-
-	queryString = p.tryParseQueryString()
-	if queryString == nil {
-		jsonString = p.parseJsonString()
-		if p.err != nil {
-			p.err = p.newSyntaxError("query-string or json-string is expected in key")
-			return nil
-		}
-	}
-
+	var q *QueryString
+	var j *JsonString
 	var value string
-	if queryString != nil {
-		value = queryString.Value
+	if q = p.tryParseQueryString(); q != nil {
+		value = q.Value
+	} else if j = p.parseJsonString(); j != nil {
+		value = j.Value
+	} else {
+		p.err = p.newSyntaxError("query-string or json-string is expected in key")
+		return nil
 	}
-	if jsonString != nil {
-		value = jsonString.Value
-	}
-	return &QueryExpr{Node{pos, p.pos}, queryString, jsonString, value}
+
+	return &QueryExpr{Node{pos, p.pos}, q, j, value}
 }
 
 func (p *Parser) parseQuery() *Query {
@@ -491,4 +484,42 @@ func (p *Parser) parseNCapture() []*Capture {
 		return nil
 	}
 	return captures
+}
+
+func (p *Parser) parsePredicate() *Predicate {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	ptype := p.parsePredicateType()
+	spaces := p.parseSpaces()
+	if p.err != nil {
+		return nil
+	}
+	var i *Integer
+	var f *Float
+	var b *Bool
+	var t *JsonString
+	switch ptype.Value {
+	case "equals":
+		if i = p.tryParseInteger(); i != nil {
+			break
+		}
+		if f = p.tryParseFloat(); f != nil {
+			break
+		}
+		if b = p.tryParseBool(); b != nil {
+			break
+		}
+		t = p.parseJsonString()
+	case "matches", "startsWith", "contains":
+		t = p.parseJsonString()
+	}
+
+	if p.err != nil {
+		p.err = p.newSyntaxError("predicate value is expected")
+		return nil
+	}
+	return &Predicate{Node{pos, p.pos}, ptype, spaces, i, f, b, t}
 }

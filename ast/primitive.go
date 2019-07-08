@@ -149,25 +149,18 @@ func (p *Parser) parseKey() *Key {
 	}
 	pos := p.pos
 
-	var keyString *KeyString
-	var jsonString *JsonString
-
-	if keyString = p.tryParseKeyString(); keyString == nil {
-		jsonString = p.parseJsonString()
-		if p.err != nil {
-			p.err = p.newSyntaxError("key-string or json-string is expected in key")
-			return nil
-		}
-	}
-
+	var k *KeyString
+	var j *JsonString
 	var value string
-	if keyString != nil {
-		value = keyString.Value
+	if k = p.tryParseKeyString(); k != nil {
+		value = k.Value
+	} else if j = p.parseJsonString(); j != nil {
+		value = j.Value
+	} else {
+		p.err = p.newSyntaxError("key-string or json-string is expected in key")
+		return nil
 	}
-	if jsonString != nil {
-		value = jsonString.Value
-	}
-	return &Key{Node{pos, p.pos}, keyString, jsonString, value}
+	return &Key{Node{pos, p.pos}, k, j, value}
 }
 
 func (p *Parser) parseValue() *Value {
@@ -176,27 +169,20 @@ func (p *Parser) parseValue() *Value {
 	}
 	pos := p.pos
 
-	var valueString *ValueString
-	var jsonString *JsonString
-	if valueString = p.tryParseValueString(); valueString == nil {
-		jsonString = p.parseJsonString()
-		if p.err != nil {
-			p.err = p.newSyntaxError("key-string or json-string is expected in key")
-			return nil
-		}
-	}
-
+	var v *ValueString
+	var j *JsonString
 	var value string
-	if valueString != nil {
-		value = valueString.Value
-	}
-	if jsonString != nil {
-		value = jsonString.Value
+	if v = p.tryParseValueString(); v != nil {
+		value = v.Value
+	} else if j = p.parseJsonString(); j != nil {
+		value = j.Value
+	} else {
+		p.err = p.newSyntaxError("key-string or json-string is expected in key")
 	}
 	return &Value{
 		Node{pos, p.pos},
-		valueString,
-		jsonString,
+		v,
+		j,
 		value,
 	}
 }
@@ -475,6 +461,27 @@ func (p *Parser) parseFloat() *Float {
 	return &Float{Node{pos, p.pos}, text, value}
 }
 
+func (p *Parser) parseBool() *Bool {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	var text string
+	var value bool
+	if p.tryParseString("true") {
+		text = "true"
+		value = true
+	} else if p.tryParseString("false") {
+		text = "false"
+		value = false
+	} else {
+		p.err = p.newSyntaxError("true or false is expected")
+		return nil
+	}
+	return &Bool{Node{pos, p.pos}, text, value}
+}
+
 func (p *Parser) parseQueryString() *QueryString {
 	if p.err != nil {
 		return nil
@@ -504,7 +511,23 @@ func (p *Parser) parseQueryType() *QueryType {
 			return &QueryType{Node{pos, p.pos}, t}
 		}
 	}
-	p.err = p.newSyntaxError("method is expected")
+	p.err = p.newSyntaxError("query type is expected")
+	return nil
+}
+
+func (p *Parser) parsePredicateType() *PredicateType {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	types := []string{"equals", "matches", "startsWith", "contains"}
+	for _, t := range types {
+		if p.tryParseString(t) {
+			return &PredicateType{Node{pos, p.pos}, t}
+		}
+	}
+	p.err = p.newSyntaxError("predicate type is expected")
 	return nil
 }
 

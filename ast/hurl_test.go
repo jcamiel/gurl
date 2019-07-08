@@ -25,9 +25,6 @@ func TestParseMethodFailed(t *testing.T) {
 }
 
 func TestParseRequest(t *testing.T) {
-	var node *Request
-	var p *Parser
-
 	var tests = []struct {
 		text string
 	}{
@@ -51,8 +48,8 @@ User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/6
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node = p.parseRequest()
+			p := NewParserFromString(test.text, "")
+			node := p.parseRequest()
 			assert.NotNil(t, node)
 			assert.Nil(t, p.Err())
 		})
@@ -122,7 +119,7 @@ key3 : value3`
 	assert.Nil(t, p.Err())
 }
 
-func TestCookies( t *testing.T) {
+func TestCookies(t *testing.T) {
 	var text string
 	var node *Cookies
 	var p *Parser
@@ -168,6 +165,26 @@ func TestBody(t *testing.T) {
 				assert.Nil(t, node)
 				assert.NotNil(t, p.Err())
 			}
+		})
+	}
+}
+
+func TestParsePredicate(t *testing.T) {
+	var tests = []struct {
+		text string
+	}{
+		{`equals "06 15 63 36 79"`},
+		{`equals true`},
+		{`contains "toto"`},
+		{`equals 123`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p := NewParserFromString(test.text, "")
+			node := p.parsePredicate()
+			assert.NotNil(t, node)
+			assert.Nil(t, p.Err())
 		})
 	}
 }

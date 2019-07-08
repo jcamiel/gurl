@@ -117,12 +117,12 @@ func Walk(v Visitor, node Noder) {
 		if n.Spaces0 != nil {
 			Walk(v, n.Spaces0)
 		}
-		Walk(v, n.QueryType)
+		Walk(v, n.Type)
 		if n.Spaces1 != nil {
 			Walk(v, n.Spaces1)
 		}
-		if n.QueryExpr != nil {
-			Walk(v, n.QueryExpr)
+		if n.Expr != nil {
+			Walk(v, n.Expr)
 		}
 		if n.Spaces2 != nil {
 			Walk(v, n.Spaces2)
