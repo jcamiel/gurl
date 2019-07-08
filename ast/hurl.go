@@ -116,6 +116,7 @@ func (p *Parser) parseResponse() *Response {
 	eol := p.parseEol()
 	headers := p.tryParseHeaders()
 	captures := p.tryParseCaptures()
+	asserts := p.tryParseAsserts()
 
 	if p.err != nil {
 		return nil
@@ -131,6 +132,7 @@ func (p *Parser) parseResponse() *Response {
 		eol,
 		headers,
 		captures,
+		asserts,
 	}
 }
 
@@ -412,6 +414,10 @@ func (p *Parser) parseQuery() *Query {
 
 	spaces0 := p.tryParseSpaces()
 	qt := p.parseQueryType()
+	if qt == nil {
+		p.err = p.newSyntaxError("query type is expected")
+		return nil
+	}
 	var spaces1 *Spaces
 	var expr *QueryExpr
 	switch qt.Value {
@@ -522,4 +528,61 @@ func (p *Parser) parsePredicate() *Predicate {
 		return nil
 	}
 	return &Predicate{Node{pos, p.pos}, ptype, spaces, i, f, b, t}
+}
+
+func (p *Parser) parseAssert() *Assert {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	comments := p.tryParseComments()
+	query := p.parseQuery()
+	spaces0 := p.tryParseSpaces()
+	predicate := p.parsePredicate()
+	spaces1 := p.tryParseSpaces()
+	comment := p.tryParseComment()
+	eol := p.parseEol()
+
+	if p.err != nil {
+		return nil
+	}
+	return &Assert{Node{pos, p.pos}, comments, query, spaces0, predicate, spaces1, comment, eol}
+}
+
+func (p *Parser) parseNAssert() []*Assert {
+	if p.err != nil {
+		return nil
+	}
+	asserts := make([]*Assert, 0)
+	for {
+		a := p.tryParseAssert()
+		if a == nil {
+			break
+		}
+		asserts = append(asserts, a)
+	}
+	if len(asserts) == 0 {
+		p.err = p.newSyntaxError("At least one capture is expected")
+		return nil
+	}
+	return asserts
+}
+
+func (p *Parser) parseAsserts() *Asserts {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	comments := p.tryParseComments()
+	section := p.parseSectionHeader("Asserts")
+	spaces0 := p.tryParseSpaces()
+	eol := p.parseEol()
+	asserts := p.tryParseNAssert()
+
+	if p.err != nil {
+		return nil
+	}
+	return &Asserts{Node{pos, p.pos}, comments, section, spaces0, eol, asserts}
 }

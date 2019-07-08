@@ -6,3 +6,7 @@
 - comment on traite whitespaces entre request et reponse
 - query-expr: est-ce-qu'on peut utiliser une key-string ? Différence par rapport à une 
 value string. ESt-ce-qu'on peut dire tout ascii plutot que A-Za-z0-9
+- assert manque eol ?
+- est-ce-qu'on traite le cas avec [Sections] et pas de section ?
+- spaces dans la query ? dans l'assert il y a un space mandatory qui
+ne peut pas être satisfait

@@ -196,6 +196,7 @@ type (
 		Eol      *Eol
 		Headers  *Headers
 		Captures *Captures
+		Asserts  *Asserts
 	}
 
 	Version struct {
@@ -266,20 +267,39 @@ type (
 
 	Bool struct {
 		Node
-		Text string
+		Text  string
 		Value bool
 	}
 
 	Predicate struct {
 		Node
-		Type *PredicateType
-		Spaces *Spaces
+		Type    *PredicateType
+		Spaces  *Spaces
 		Integer *Integer
-		Float *Float
-		Bool *Bool
-		JsonString *JsonString
+		Float   *Float
+		Bool    *Bool
+		String  *JsonString
 	}
 
+	Assert struct {
+		Node
+		Comments  *Comments
+		Query     *Query
+		Spaces0   *Spaces
+		Predicate *Predicate
+		Spaces1   *Spaces
+		Comment   *Comment
+		Eol       *Eol
+	}
+
+	Asserts struct {
+		Node
+		Comments      *Comments
+		SectionHeader *SectionHeader
+		Spaces        *Spaces
+		Eol           *Eol
+		Asserts       []*Assert
+	}
 )
 
 // Node not defined in the hurl spec,

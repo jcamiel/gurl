@@ -153,3 +153,47 @@ func (p *Parser) tryParseCaptures() *Captures {
 	}
 	return node
 }
+
+func (p *Parser) tryParseAssert() *Assert {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseAssert()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+
+}
+
+func (p *Parser) tryParseNAssert() []*Assert {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseNAssert()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseAsserts() *Asserts {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseAsserts()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
