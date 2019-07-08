@@ -16,13 +16,13 @@ func (p *Parser) parseWhitespaces() *Whitespaces {
 	}
 	pos := p.pos
 
-	whitespaces, err := p.readRunesWhile(isWhitespace)
-	if err != nil || len(whitespaces) == 0 {
+	w, err := p.readRunesWhile(isWhitespace)
+	if err != nil || len(w) == 0 {
 		p.err = p.newSyntaxError("space, tab or newline is expected in whitespaces")
 		return nil
 	}
 
-	return &Whitespaces{Node{pos, p.pos}, string(whitespaces)}
+	return &Whitespaces{Node{pos, p.pos}, string(w)}
 }
 
 func (p *Parser) parseSpaces() *Spaces {
@@ -152,8 +152,7 @@ func (p *Parser) parseKey() *Key {
 	var keyString *KeyString
 	var jsonString *JsonString
 
-	keyString = p.tryParseKeyString()
-	if keyString == nil {
+	if keyString = p.tryParseKeyString(); keyString == nil {
 		jsonString = p.parseJsonString()
 		if p.err != nil {
 			p.err = p.newSyntaxError("key-string or json-string is expected in key")
@@ -179,9 +178,7 @@ func (p *Parser) parseValue() *Value {
 
 	var valueString *ValueString
 	var jsonString *JsonString
-
-	valueString = p.tryParseValueString()
-	if valueString == nil {
+	if valueString = p.tryParseValueString(); valueString == nil {
 		jsonString = p.parseJsonString()
 		if p.err != nil {
 			p.err = p.newSyntaxError("key-string or json-string is expected in key")
@@ -210,8 +207,7 @@ func (p *Parser) parseColon() *Colon {
 	}
 	pos := p.pos
 
-	r, err := p.readRune()
-	if err != nil || r != ':' {
+	if r, err := p.readRune(); err != nil || r != ':' {
 		p.err = p.newSyntaxError(": is expected")
 		return nil
 	}
@@ -439,6 +435,44 @@ func (p *Parser) parseInteger() *Integer {
 		return nil
 	}
 	return &Integer{Node{pos, p.pos}, text, value}
+}
+
+func (p *Parser) parseFloat() *Float {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	r, err := p.nextRune()
+	if p.err = err; err != nil {
+		return nil
+	}
+	if r == '+' || r == '-' {
+		_, _ = p.readRune()
+	} else if !isDigit(r) {
+		p.err = p.newSyntaxError("+-[0-9].[0-9] is expected")
+		return nil
+	}
+	digits, err := p.readRunesWhile(isDigit)
+	if err != nil || len(digits) == 0 {
+		p.err = p.newSyntaxError("+-[0-9].[0-9] is expected")
+		return nil
+	}
+	r, err = p.readRune()
+	if err != nil || r != '.' {
+		p.err = p.newSyntaxError(". is expected")
+	}
+	digits, err = p.readRunesWhile(isDigit)
+	if err != nil || len(digits) == 0 {
+		p.err = p.newSyntaxError("+-[0-9].[0-9] is expected")
+		return nil
+	}
+	text := string(p.buffer[pos.Offset:p.pos.Offset])
+	value, err := strconv.ParseFloat(text, 64)
+	if p.err = err; err != nil {
+		return nil
+	}
+	return &Float{Node{pos, p.pos}, text, value}
 }
 
 func (p *Parser) parseQueryString() *QueryString {

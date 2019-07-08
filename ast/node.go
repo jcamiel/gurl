@@ -258,6 +258,12 @@ type (
 		Value int
 	}
 
+	Float struct {
+		Node
+		Text  string
+		Value float64
+	}
+
 )
 
 // Node not defined in the hurl spec,

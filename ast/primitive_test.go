@@ -424,3 +424,30 @@ func TestParseNatural(t *testing.T) {
 		})
 	}
 }
+
+func TestParseFloat(t *testing.T) {
+	var tests = []struct {
+		query         string
+		expectedValue float64
+		expectedText  string
+		error         bool
+	}{
+		{query: "3.14159265", expectedValue: 3.14159265, expectedText: "3.14159265"},
+		{query: "-0.1abcedf", expectedValue: -0.1, expectedText: "-0.1"},
+	}
+	for _, test := range tests {
+		t.Run(test.query, func(t *testing.T) {
+			p := NewParserFromString(test.query, "")
+			node := p.parseFloat()
+			if !test.error {
+				assert.NotNil(t, node)
+				assert.Equal(t, test.expectedValue, node.Value)
+				assert.Equal(t, test.expectedText, node.Text)
+				assert.Nil(t, p.Err())
+			} else {
+				assert.Nil(t, node)
+				assert.NotNil(t, p.Err())
+			}
+		})
+	}
+}
