@@ -80,6 +80,9 @@ func Walk(v Visitor, node Noder) {
 		if n.Asserts != nil {
 			Walk(v, n.Asserts)
 		}
+		if n.Body != nil {
+			Walk(v, n.Body)
+		}
 	case *Headers:
 		for _, h := range n.Headers {
 			Walk(v, h)

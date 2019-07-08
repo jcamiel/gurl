@@ -107,6 +107,14 @@ func (p *Parser) nextRunes(count int) ([]rune, error) {
 	return p.buffer[p.pos.Offset:end], nil
 }
 
+func (p *Parser) nextRunesMax(count int) ([]rune, error) {
+	end := p.pos.Offset + count
+	if end > len(p.buffer) {
+		return p.buffer[p.pos.Offset:], nil
+	}
+	return p.buffer[p.pos.Offset:end], nil
+}
+
 func (p *Parser) more() bool {
 	return p.pos.Offset < len(p.buffer)
 }
@@ -117,10 +125,4 @@ func (p *Parser) newSyntaxError(text string) error {
 
 func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", e.Pos.Line, e.Pos.Column, e.Msg)
-}
-
-// Specific debug
-func (p *Parser) skipToNextEol() {
-	_, _ = p.readRunesWhile(isNotNewLine)
-	_ = p.parseWhitespaces()
 }

@@ -197,6 +197,7 @@ type (
 		Headers  *Headers
 		Captures *Captures
 		Asserts  *Asserts
+		Body     *Body
 	}
 
 	Version struct {

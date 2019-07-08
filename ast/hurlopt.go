@@ -197,3 +197,30 @@ func (p *Parser) tryParseAsserts() *Asserts {
 	return node
 }
 
+func (p *Parser) tryParseNEntry() []*Entry {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseNEntry()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}
+
+func (p *Parser) tryParseEntry() *Entry {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	node := p.parseEntry()
+	if p.err != nil {
+		p.pos, p.err = pos, nil
+		return nil
+	}
+	return node
+}

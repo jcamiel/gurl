@@ -82,6 +82,9 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	case *ast.QueryType:
 		p.text += aurora.Cyan(n.Value).String()
 		return nil
+	case *ast.PredicateType:
+		p.text += aurora.Index(214, n.Value).String()
+		return nil
 	}
 	return p
 }

@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -11,11 +12,16 @@ func (p *Parser) parseHurlFile() *HurlFile {
 	pos := p.pos
 
 	whitespaces := p.tryParseWhitespaces()
-	entries := p.parseNEntry()
-
+	entries := p.tryParseNEntry()
 	if p.err != nil {
 		return nil
 	}
+	if p.more() {
+		runes, _ := p.nextRunesMax(10)
+		p.err = p.newSyntaxError(fmt.Sprintf("unexpected text %s", string(runes)))
+		return nil
+	}
+
 	return &HurlFile{Node{pos, p.pos}, whitespaces, entries}
 }
 
@@ -26,17 +32,15 @@ func (p *Parser) parseNEntry() []*Entry {
 
 	entries := make([]*Entry, 0)
 	for {
-		e := p.parseEntry()
-		if p.err != nil {
-			// FIXME: for the moment, silent fail on error.
-			p.err = nil
-			if p.more() {
-				p.skipToNextEol()
-				continue
-			}
+		e := p.tryParseEntry()
+		if e == nil {
 			break
 		}
 		entries = append(entries, e)
+	}
+	if len(entries) == 0 {
+		p.err = p.newSyntaxError("At least one entry is expected")
+		return nil
 	}
 	return entries
 }
@@ -117,6 +121,7 @@ func (p *Parser) parseResponse() *Response {
 	headers := p.tryParseHeaders()
 	captures := p.tryParseCaptures()
 	asserts := p.tryParseAsserts()
+	body := p.tryParseBody()
 
 	if p.err != nil {
 		return nil
@@ -133,6 +138,7 @@ func (p *Parser) parseResponse() *Response {
 		headers,
 		captures,
 		asserts,
+		body,
 	}
 }
 
