@@ -391,54 +391,54 @@ func (p *Parser) parseBase64() (value []byte, text string) {
 	return bs, string(p.buffer[pos.Offset:p.pos.Offset])
 }
 
-func (p *Parser) parseNatural() (value int, text string) {
+func (p *Parser) parseNatural() *Natural {
 	if p.err != nil {
-		return 0, ""
+		return nil
 	}
+	pos := p.pos
+
 	digits, err := p.readRunesWhile(isDigit)
 	if err != nil || len(digits) == 0 {
 		p.err = p.newSyntaxError("0-9 is expected")
-		return 0, ""
+		return nil
 	}
 
-	text = string(digits)
-	value, err = strconv.Atoi(text)
-	if err != nil {
-		p.err = p.newSyntaxError("0-9 is expected")
-		return 0, ""
+	text := string(digits)
+	value, err := strconv.Atoi(text)
+	if p.err = err; p.err != nil {
+		return nil
 	}
-	return
+	return &Natural{Node{pos, p.pos}, text, value}
 }
 
-func (p *Parser) parseInteger() (value int, text string) {
+func (p *Parser) parseInteger() *Integer {
 	if p.err != nil {
-		return 0, ""
+		return nil
 	}
 	pos := p.pos
 
 	r, err := p.nextRune()
 	if p.err = err; err != nil {
-		return 0, ""
+		return nil
 	}
-	if r == '+' || r == '-'{
+	if r == '+' || r == '-' {
 		_, _ = p.readRune()
 	} else if !isDigit(r) {
 		p.err = p.newSyntaxError("+-0-9 is expected")
-		return 0, ""
+		return nil
 	}
 	digits, err := p.readRunesWhile(isDigit)
 	if err != nil || len(digits) == 0 {
 		p.err = p.newSyntaxError("+-0-9 is expected")
-		return 0, ""
+		return nil
 	}
-
-	text = string(p.buffer[pos.Offset:p.pos.Offset])
-	value, err = strconv.Atoi(text)
+	text := string(p.buffer[pos.Offset:p.pos.Offset])
+	value, err := strconv.Atoi(text)
 	if err != nil {
 		p.err = p.newSyntaxError("+-0-9 is expected")
-		return 0, ""
+		return nil
 	}
-	return value, text
+	return &Integer{Node{pos, p.pos}, text, value}
 }
 
 func (p *Parser) parseQueryString() *QueryString {

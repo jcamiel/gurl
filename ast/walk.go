@@ -234,8 +234,10 @@ func Walk(v Visitor, node Noder) {
 		if n.Whitespaces != nil {
 			Walk(v, n.Whitespaces)
 		}
+	case *Status:
+		Walk(v, n.Value)
 	case *Eol, *Whitespaces, *Comment, *Spaces, *Method, *Url, *KeyString, *JsonString, *ValueString, *Colon,
-		*SectionHeader, *CookieValue, *Body, *Version, *Status, *QueryType, *QueryString:
+		*SectionHeader, *CookieValue, *Body, *Version, *Natural, *QueryType, *QueryString:
 		// do nothing
 	default:
 		panic(fmt.Sprintf("ast.Walk: unexpected node type %T", n))

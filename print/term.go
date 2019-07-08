@@ -76,7 +76,7 @@ func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	case *ast.Version:
 		p.text += n.Value
 		return nil
-	case *ast.Status:
+	case *ast.Natural:
 		p.text += aurora.Index(39, n.Text).String()
 		return nil
 	case *ast.QueryType:

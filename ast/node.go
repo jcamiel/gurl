@@ -205,8 +205,7 @@ type (
 
 	Status struct {
 		Node
-		Text  string
-		Value int
+		Value *Natural
 	}
 
 	QueryExpr struct {
@@ -246,6 +245,19 @@ type (
 		Eol           *Eol
 		Captures      []*Capture
 	}
+
+	Natural struct {
+		Node
+		Text  string
+		Value int
+	}
+
+	Integer struct {
+		Node
+		Text  string
+		Value int
+	}
+
 )
 
 // Node not defined in the hurl spec,

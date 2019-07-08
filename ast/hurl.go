@@ -376,11 +376,11 @@ func (p *Parser) parseStatus() *Status {
 		return nil
 	}
 	pos := p.pos
-	value, text := p.parseNatural()
+	value := p.parseNatural()
 	if p.err != nil {
 		return nil
 	}
-	return &Status{Node{pos, p.pos}, text, value}
+	return &Status{Node{pos, p.pos}, value}
 }
 
 func (p *Parser) parseQueryExpr() *QueryExpr {

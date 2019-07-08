@@ -411,14 +411,14 @@ func TestParseNatural(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.query, func(t *testing.T) {
 			p := NewParserFromString(test.query, "")
-			value, text := p.parseInteger()
+			node := p.parseInteger()
 			if !test.error {
-				assert.Equal(t, test.expectedValue, value)
-				assert.Equal(t, test.expectedText, text)
+				assert.NotNil(t, node)
+				assert.Equal(t, test.expectedValue, node.Value)
+				assert.Equal(t, test.expectedText, node.Text)
 				assert.Nil(t, p.Err())
 			} else {
-				assert.Equal(t, 0, value)
-				assert.Equal(t, "", text)
+				assert.Nil(t, node)
 				assert.NotNil(t, p.Err())
 			}
 		})
