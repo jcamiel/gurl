@@ -6,9 +6,6 @@ import (
 )
 
 func TestParseWhitespaces(t *testing.T) {
-	var p *Parser
-	var node interface{}
-
 	var tests = []struct {
 		text         string
 		expectedText string
@@ -22,11 +19,10 @@ func TestParseWhitespaces(t *testing.T) {
 			Position{8, 3, 2},
 		},
 	}
-
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node = p.parseWhitespaces()
+			p := NewParserFromString(test.text, "")
+			node := p.parseWhitespaces()
 			assert.Nil(t, p.Err())
 			assert.Equal(t, &Whitespaces{Node{test.begin, test.end}, test.expectedText}, node, "Whitespaces should be parsed")
 		})
@@ -34,7 +30,6 @@ func TestParseWhitespaces(t *testing.T) {
 }
 
 func TestParseOptionalWhitespaces(t *testing.T) {
-
 	text := "\u0020\u0020\nABCDEF"
 	p := NewParserFromString(text, "")
 
@@ -117,9 +112,6 @@ Bla bla bal`
 }
 
 func TestParseJsonString(t *testing.T) {
-	var node *JsonString
-	var p *Parser
-
 	var tests = []struct {
 		text          string
 		expectedValue string
@@ -140,8 +132,8 @@ func TestParseJsonString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node = p.parseJsonString()
+			p := NewParserFromString(test.text, "")
+			node := p.parseJsonString()
 			if !test.error {
 				assert.NotNil(t, node)
 				assert.Equal(t, test.expectedValue, node.Value)
@@ -154,9 +146,6 @@ func TestParseJsonString(t *testing.T) {
 }
 
 func TestParseKeyString(t *testing.T) {
-	var node *KeyString
-	var p *Parser
-
 	var tests = []struct {
 		text          string
 		expectedValue string
@@ -170,8 +159,8 @@ func TestParseKeyString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node = p.parseKeyString()
+			p := NewParserFromString(test.text, "")
+			node := p.parseKeyString()
 			if !test.error {
 				assert.Equal(t, test.expectedValue, node.Value)
 				assert.Nil(t, p.Err())
@@ -184,8 +173,6 @@ func TestParseKeyString(t *testing.T) {
 }
 
 func TestParseKey(t *testing.T) {
-	var node *Key
-	var p *Parser
 
 	var tests = []struct {
 		text          string
@@ -199,8 +186,8 @@ func TestParseKey(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node = p.parseKey()
+			p := NewParserFromString(test.text, "")
+			node := p.parseKey()
 			if !test.error {
 				assert.Equal(t, test.expectedValue, node.Value)
 				assert.Nil(t, p.Err())
@@ -228,8 +215,6 @@ func TestParseKeyValue(t *testing.T) {
 }
 
 func TestParseValueString(t *testing.T) {
-	var node *ValueString
-	var p *Parser
 
 	var tests = []struct {
 		text          string
@@ -246,8 +231,8 @@ func TestParseValueString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node = p.parseValueString()
+			p := NewParserFromString(test.text, "")
+			node := p.parseValueString()
 			if !test.error {
 				assert.Equal(t, test.expectedValue, node.Value)
 				assert.Nil(t, p.Err())
@@ -272,8 +257,6 @@ func TestParseSectionHeader(t *testing.T) {
 }
 
 func TestJson(t *testing.T) {
-	var node Json
-	var p *Parser
 
 	var tests = []struct {
 		text  string
@@ -292,8 +275,8 @@ func TestJson(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			node, _ = p.parseJson()
+			p := NewParserFromString(test.text, "")
+			node, _ := p.parseJson()
 			if !test.error {
 				assert.NotNil(t, node)
 				assert.Nil(t, p.Err())
@@ -306,8 +289,6 @@ func TestJson(t *testing.T) {
 }
 
 func TestXml(t *testing.T) {
-	var p *Parser
-	var xml string
 
 	var tests = []struct {
 		text  string
@@ -328,8 +309,8 @@ func TestXml(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
-			p = NewParserFromString(test.text, "")
-			xml = p.parseXml()
+			p := NewParserFromString(test.text, "")
+			xml := p.parseXml()
 			if !test.error {
 				assert.Equal(t, 334, len(xml))
 				assert.Nil(t, p.Err())
@@ -341,7 +322,6 @@ func TestXml(t *testing.T) {
 }
 
 func TestParseBase64(t *testing.T) {
-	var p *Parser
 
 	var tests = []struct {
 		encoded string
@@ -369,12 +349,13 @@ ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=;`,
 		},
 		{
 			encoded: `base64,V2VsY29tZSBodXJsIQ==`,
-			error: true,
+			error:   true,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.encoded, func(t *testing.T) {
-			p = NewParserFromString(test.encoded, "")
+			p := NewParserFromString(test.encoded, "")
 			value, _ := p.parseBase64()
 			if !test.error {
 				assert.Equal(t, test.decoded, string(value))
@@ -389,8 +370,6 @@ ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=;`,
 }
 
 func TestParseQueryString(t *testing.T) {
-	var p *Parser
-
 	var tests = []struct {
 		query    string
 		expected string
@@ -403,13 +382,43 @@ func TestParseQueryString(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.query, func(t *testing.T) {
-			p = NewParserFromString(test.query, "")
+			p := NewParserFromString(test.query, "")
 			node := p.parseQueryString()
 			if !test.error {
 				assert.Equal(t, test.expected, node.Value)
 				assert.Nil(t, p.Err())
 			} else {
 				assert.Nil(t, node)
+				assert.NotNil(t, p.Err())
+			}
+		})
+	}
+}
+
+func TestParseNatural(t *testing.T) {
+	var tests = []struct {
+		query         string
+		expectedValue int
+		expectedText  string
+		error         bool
+	}{
+		{query: "12345678", expectedValue: 12345678, expectedText: "12345678"},
+		{query: "-123xxx", expectedValue: -123, expectedText: "-123"},
+		{query: "+00046", expectedValue: 46, expectedText: "+00046"},
+		{query: "+-12", error:true},
+		{query: "abcdef", error:true},
+	}
+	for _, test := range tests {
+		t.Run(test.query, func(t *testing.T) {
+			p := NewParserFromString(test.query, "")
+			value, text := p.parseInteger()
+			if !test.error {
+				assert.Equal(t, test.expectedValue, value)
+				assert.Equal(t, test.expectedText, text)
+				assert.Nil(t, p.Err())
+			} else {
+				assert.Equal(t, 0, value)
+				assert.Equal(t, "", text)
 				assert.NotNil(t, p.Err())
 			}
 		})

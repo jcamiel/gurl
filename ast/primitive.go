@@ -410,6 +410,37 @@ func (p *Parser) parseNatural() (value int, text string) {
 	return
 }
 
+func (p *Parser) parseInteger() (value int, text string) {
+	if p.err != nil {
+		return 0, ""
+	}
+	pos := p.pos
+
+	r, err := p.nextRune()
+	if p.err = err; err != nil {
+		return 0, ""
+	}
+	if r == '+' || r == '-'{
+		_, _ = p.readRune()
+	} else if !isDigit(r) {
+		p.err = p.newSyntaxError("+-0-9 is expected")
+		return 0, ""
+	}
+	digits, err := p.readRunesWhile(isDigit)
+	if err != nil || len(digits) == 0 {
+		p.err = p.newSyntaxError("+-0-9 is expected")
+		return 0, ""
+	}
+
+	text = string(p.buffer[pos.Offset:p.pos.Offset])
+	value, err = strconv.Atoi(text)
+	if err != nil {
+		p.err = p.newSyntaxError("+-0-9 is expected")
+		return 0, ""
+	}
+	return value, text
+}
+
 func (p *Parser) parseQueryString() *QueryString {
 	if p.err != nil {
 		return nil
