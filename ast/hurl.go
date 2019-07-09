@@ -319,7 +319,7 @@ func (p *Parser) parseCookies() *Cookies {
 	section := p.parseSectionHeader("Cookies")
 	spaces := p.tryParseSpaces()
 	eol := p.parseEol()
-	cookies := p.tryParseNCookie()
+	cookies := p.parseNCookie()
 
 	if p.err != nil {
 		return nil
@@ -337,7 +337,7 @@ func (p *Parser) parseQsParams() *QsParams {
 	section := p.parseSectionHeader("QueryStringParams")
 	spaces := p.tryParseSpaces()
 	eol := p.parseEol()
-	params := p.tryParseNKeyValue()
+	params := p.parseNKeyValue()
 
 	if p.err != nil {
 		return nil
@@ -355,7 +355,7 @@ func (p *Parser) parseFormParams() *FormParams {
 	section := p.parseSectionHeader("FormParams")
 	spaces := p.tryParseSpaces()
 	eol := p.parseEol()
-	params := p.tryParseNKeyValue()
+	params := p.parseNKeyValue()
 
 	if p.err != nil {
 		return nil
@@ -479,7 +479,7 @@ func (p *Parser) parseCaptures() *Captures {
 	section := p.parseSectionHeader("Captures")
 	spaces := p.tryParseSpaces()
 	eol := p.parseEol()
-	captures := p.tryParseNCapture()
+	captures := p.parseNCapture()
 
 	if p.err != nil {
 		return nil
@@ -593,7 +593,7 @@ func (p *Parser) parseAsserts() *Asserts {
 	section := p.parseSectionHeader("Asserts")
 	spaces0 := p.tryParseSpaces()
 	eol := p.parseEol()
-	asserts := p.tryParseNAssert()
+	asserts := p.parseNAssert()
 
 	if p.err != nil {
 		return nil

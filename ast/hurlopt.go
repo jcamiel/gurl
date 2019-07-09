@@ -42,20 +42,6 @@ func (p *Parser) tryParseCookie() *Cookie {
 	return node
 }
 
-func (p *Parser) tryParseNCookie() []*Cookie {
-	if p.err != nil {
-		return nil
-	}
-	pos := p.pos
-
-	node := p.parseNCookie()
-	if p.err != nil {
-		p.pos, p.err = pos, nil
-		return nil
-	}
-	return node
-}
-
 func (p *Parser) tryParseQsParams() *QsParams {
 	if p.err != nil {
 		return nil
@@ -126,20 +112,6 @@ func (p *Parser) tryParseCapture() *Capture {
 	return node
 }
 
-func (p *Parser) tryParseNCapture() []*Capture {
-	if p.err != nil {
-		return nil
-	}
-	pos := p.pos
-
-	node := p.parseNCapture()
-	if p.err != nil {
-		p.pos, p.err = pos, nil
-		return nil
-	}
-	return node
-}
-
 func (p *Parser) tryParseCaptures() *Captures {
 	if p.err != nil {
 		return nil
@@ -167,20 +139,6 @@ func (p *Parser) tryParseAssert() *Assert {
 	}
 	return node
 
-}
-
-func (p *Parser) tryParseNAssert() []*Assert {
-	if p.err != nil {
-		return nil
-	}
-	pos := p.pos
-
-	node := p.parseNAssert()
-	if p.err != nil {
-		p.pos, p.err = pos, nil
-		return nil
-	}
-	return node
 }
 
 func (p *Parser) tryParseAsserts() *Asserts {
