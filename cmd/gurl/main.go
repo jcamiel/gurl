@@ -35,8 +35,8 @@ func main() {
 		}
 
 		//printer := print.NewTermPrinter()
-		//printer := print.NewJSONPrinter()
-		printer := print.NewHTMLPrinter()
+		printer := print.NewJSONPrinter()
+		//printer := print.NewHTMLPrinter()
 		fmt.Print(printer.Print(hurl))
 	}
 }
