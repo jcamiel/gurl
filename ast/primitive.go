@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"unicode"
+	"unicode/utf16"
 )
 
 func (p *Parser) parseWhitespaces() *Whitespaces {
@@ -114,16 +116,94 @@ func (p *Parser) parseJsonString() *JsonString {
 	}
 	pos := p.pos
 
-	obj, text := p.parseJson()
-	if p.err != nil {
+	r, err := p.readRune()
+	if p.err = err; err != nil {
 		return nil
 	}
-	switch value := obj.(type) {
-	case string:
-		return &JsonString{Node{pos, p.pos}, text, value}
+	if r != '"' {
+		p.err = p.newSyntaxError("\" is expected at json-string beginning")
+		return nil
 	}
-	p.err = p.newSyntaxError("string object is expected in json-string")
-	return nil
+	value := make([]rune, 0)
+	for {
+		chars, err := p.readRunesWhile(func(r rune) bool {
+			return r != '"' && r != '\\' && !isControlCharacter(r)
+		})
+		if p.err = err; err != nil {
+			return nil
+		}
+		value = append(value, chars...)
+
+		r, err = p.readRune()
+		if p.err = err; err != nil {
+			return nil
+		}
+		if isControlCharacter(r) {
+			p.err = p.newSyntaxError("control character not allowed in json-string")
+			return nil
+		}
+		if r == '"' {
+			break
+		}
+		// Parsing of escaped char
+		if r == '\\' {
+			r, err = p.readRune()
+			if p.err = err; err != nil {
+				return nil
+			}
+			if r == 'u' {
+				hex, err := p.readRunes(4)
+				if err != nil {
+					p.err = p.newSyntaxError("valid unicode literal is expected")
+					return nil
+				}
+				rr := getu4([]byte(string(hex)))
+				if rr < 0 {
+					p.err = p.newSyntaxError("valid unicode literal is expected")
+					return nil
+				}
+				if utf16.IsSurrogate(rr) {
+					if !p.tryParseString(`\u`) {
+						p.err = p.newSyntaxError("valid unicode literal is expected")
+						return nil
+					}
+					hex1, err := p.readRunes(4)
+					if err != nil {
+						p.err = p.newSyntaxError("valid unicode literal is expected")
+						return nil
+					}
+					rr1 := getu4([]byte(string(hex1)))
+					if dec := utf16.DecodeRune(rr, rr1); dec != unicode.ReplacementChar {
+						value = append(value, dec)
+						continue
+					} else {
+						p.err = p.newSyntaxError("valid unicode literal is expected")
+						return nil
+					}
+				}
+				value = append(value, r)
+				continue
+			}
+			controls := map[rune]rune{
+				'"':  '"',
+				'\\': '\\',
+				'/':  '/',
+				'b':  '\b',
+				'f':  '\f',
+				'n':  '\n',
+				'r':  '\r',
+				't':  '\t',
+			}
+			c, ok := controls[r]
+			if !ok {
+				p.err = p.newSyntaxError("control characted is expected")
+				return nil
+			}
+			value = append(value, c)
+		}
+	}
+
+	return &JsonString{Node{pos, p.pos}, string(p.buffer[pos.Offset:p.pos.Offset]), string(value)}
 }
 
 func (p *Parser) parseKeyString() *KeyString {
@@ -328,12 +408,21 @@ func (p *Parser) parseXml() string {
 		return ""
 	}
 
+	// Basic check to discard non xml text : the xml stream decoder read the stream
+	// until a valid xml is found ('abcd<xml' will be decoded), and we want to avoid
+	// this.
+	r, err := p.nextRune()
+	if err != nil || r != '<' {
+		p.err = p.newSyntaxError("< is expected at xml beginning")
+		return ""
+	}
+
 	var value interface{}
 	rs := p.buffer[p.pos.Offset:]
 	bs := []byte(string(rs))
 	reader := bytes.NewReader(bs)
 	dec := xml.NewDecoder(reader)
-	err := dec.Decode(&value)
+	err = dec.Decode(&value)
 	if p.err = err; err != nil {
 		return ""
 	}
@@ -494,7 +583,7 @@ func (p *Parser) parseQueryString() *QueryString {
 		return nil
 	}
 	if r == '"' {
-		p.err =  p.newSyntaxError("\" is not allowed at query-string beginning")
+		p.err = p.newSyntaxError("\" is not allowed at query-string beginning")
 		return nil
 	}
 
