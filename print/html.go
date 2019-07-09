@@ -12,8 +12,7 @@ type HTMLPrinter struct {
 }
 
 func NewHTMLPrinter() *HTMLPrinter {
-	f := HTMLPrinter{}
-	return &f
+	return &HTMLPrinter{}
 }
 
 func (p *HTMLPrinter) Print(hurlFile *ast.HurlFile) string {

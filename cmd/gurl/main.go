@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gurl/ast"
-	"gurl/print"
+	"gurl/run"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -54,9 +54,12 @@ func main() {
 		}
 
 		//printer := print.NewTermPrinter()
-		printer := print.NewJSONPrinter()
+		//printer := print.NewJSONPrinter()
 		//printer := print.NewHTMLPrinter()
-		fmt.Print(printer.Print(hurl))
+		//fmt.Print(printer.Print(hurl))
+
+		runner := run.NewHttpRunner()
+		runner.Run(hurl)
 	}
 
 	if *memprofile != "" {
