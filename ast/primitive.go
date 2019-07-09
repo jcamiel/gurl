@@ -124,6 +124,48 @@ func (p *Parser) parseJsonString() *JsonString {
 		p.err = p.newSyntaxError("\" is expected at json-string beginning")
 		return nil
 	}
+
+	var pr rune
+	for {
+		r, err := p.readRune()
+		if p.err = err; err != nil {
+			return nil
+		}
+		if r == '"' && pr != '\\' {
+			break
+		}
+		if isNewLine(r) {
+			p.err = p.newSyntaxError("newline not allowed in json-string")
+			return nil
+		}
+		pr = r
+	}
+
+	var value string
+	rs := p.buffer[pos.Offset:p.pos.Offset]
+	text := string(rs)
+	bs := []byte(text)
+	err = json.Unmarshal(bs, &value)
+	if p.err = err; err != nil {
+		return nil
+	}
+	return &JsonString{Node{pos, p.pos}, text, value}
+}
+
+func (p *Parser) parseJsonString() *JsonString {
+	if p.err != nil {
+		return nil
+	}
+	pos := p.pos
+
+	r, err := p.readRune()
+	if p.err = err; err != nil {
+		return nil
+	}
+	if r != '"' {
+		p.err = p.newSyntaxError("\" is expected at json-string beginning")
+		return nil
+	}
 	value := make([]rune, 0)
 	for {
 		chars, err := p.readRunesWhile(func(r rune) bool {
