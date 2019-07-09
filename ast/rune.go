@@ -46,27 +46,3 @@ func isCombining(r rune) bool {
 		(r >= '\u1dc0' && r <= '\u1dff') ||
 		(r >= '\ufe20' && r <= '\ufe2f')
 }
-
-func isControlCharacter(r rune) bool {
-	return r == '\b' || r == '\f' || r == '\n' || r == '\r' || r == '\t'
-}
-
-// getu4 decodes \uXXXX from s, returning the hex value,
-// or it returns -1.
-func getu4(s []byte) rune {
-	var r rune
-	for _, c := range s[:4] {
-		switch {
-		case '0' <= c && c <= '9':
-			c = c - '0'
-		case 'a' <= c && c <= 'f':
-			c = c - 'a' + 10
-		case 'A' <= c && c <= 'F':
-			c = c - 'A' + 10
-		default:
-			return -1
-		}
-		r = r*16 + rune(c)
-	}
-	return r
-}
