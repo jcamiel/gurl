@@ -1,7 +1,7 @@
 package ast
 
 const (
-	hash           = '\u0023'
+	hash = '\u0023'
 )
 
 func equal(a, b []rune) bool {
