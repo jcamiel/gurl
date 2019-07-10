@@ -53,7 +53,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		//printer := print.NewTermPrinter()
+		//printer := print.NewHTMLPrinter()
 		//printer := print.NewJSONPrinter()
 		//printer := print.NewHTMLPrinter()
 		//fmt.Print(printer.Print(hurl))
