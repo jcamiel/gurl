@@ -22,6 +22,11 @@ func TestRenderOk(t *testing.T) {
 			map[string]string{"name": "toto"},
 			"toto-toto-toto",
 		},
+		{
+			"abcdef",
+			map[string]string{"id": "1234567", "name": "Bart", "firstName": "Simpson"},
+			"abcdef",
+		},
 	}
 
 	for _, test := range tests {
