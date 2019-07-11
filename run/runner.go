@@ -2,6 +2,9 @@ package run
 
 import (
 	"fmt"
+	"github.com/antchfx/htmlquery"
+	"github.com/antchfx/xpath"
+	"golang.org/x/net/html"
 	"gurl/ast"
 	"gurl/template"
 	"log"
@@ -34,7 +37,13 @@ func (h *HttpRunner) Run(hurl *ast.HurlFile) {
 		}
 
 		if e.Response != nil {
-			checkResponse(e.Response, resp)
+
+			_ = checkStatus(e.Response, resp)
+
+			if e.Response.Captures != nil {
+				captureVariables(e.Response.Captures, resp)
+			}
+
 		}
 
 		_ = resp.Body.Close()
@@ -82,8 +91,32 @@ func addQueryParams(req *http.Request, params []*ast.KeyValue) {
 	req.URL.RawQuery = q.Encode()
 }
 
-func checkResponse(r *ast.Response, resp *http.Response) {
+func checkStatus(r *ast.Response, resp *http.Response) bool {
 	if resp.StatusCode != r.Status.Value.Value {
 		log.Print(fmt.Sprintf("Assert status failed expected: %d actual: %d", r.Status.Value.Value, resp.StatusCode))
+		return false
 	}
+	return true
+}
+
+func captureVariables(captures *ast.Captures, resp *http.Response) {
+	for _, c := range captures.Captures {
+		_ = c.Key.Value
+		_, _ = evaluateQuery(c.Query, resp)
+	}
+}
+
+func evaluateQuery(q *ast.Query, resp *http.Response) (string, error) {
+	if q.Type.Value == "xpath" {
+		expr, err :=  xpath.Compile(q.Expr.Value)
+		if err != nil {
+			return "", nil
+		}
+		node, _ := html.Parse(resp.Body)
+		root := htmlquery.FindOne(node, "//html")
+		nav := htmlquery.CreateXPathNavigator(root)
+		v := expr.Evaluate(nav)
+		fmt.Println(v)
+	}
+	return "", nil
 }
