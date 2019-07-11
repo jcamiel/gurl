@@ -4,68 +4,86 @@ import (
 	"fmt"
 	"gurl/ast"
 	"gurl/template"
+	"log"
 	"net/http"
 )
 
 type HttpRunner struct {
-	client *http.Client
 	variables map[string]string
 }
 
 func NewHttpRunner() *HttpRunner {
+	//variables := make(map[string]string)
+	variables := map[string]string{
+		"root_url": "http://localhost:8080",
+	}
+	return &HttpRunner{variables}
+}
+
+func (h *HttpRunner) Run(hurl *ast.HurlFile) {
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
-	//variables := make(map[string]string)
-	variables := map[string]string{
-		"root_url": "https://localhost:8080",
+
+	for _, e := range hurl.Entries {
+		resp, err := h.doRequest(client, e.Request)
+		if err != nil {
+			panic(err)
+		}
+
+		if e.Response != nil {
+			checkResponse(e.Response, resp)
+		}
+
+		_ = resp.Body.Close()
 	}
-	return &HttpRunner{client, variables}
 }
 
-func (h *HttpRunner) Run(hurlFile *ast.HurlFile) {
-	ast.Walk(h, hurlFile)
-}
+func (h *HttpRunner) doRequest(client *http.Client, r *ast.Request) (*http.Response, error) {
 
-func (h *HttpRunner) Visit(node ast.Noder) ast.Visitor {
-	switch n := node.(type) {
-	case *ast.Request:
-		h.doRequest(n)
-		return nil
-	}
-	return h
-}
-
-func (h *HttpRunner)doRequest(request *ast.Request) {
-
-	/*"GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH",*/
-
-	url, err := template.Render(request.Url.Value, h.variables)
+	url, err := template.Render(r.Url.Value, h.variables)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	switch request.Method.Value {
-	case "GET":
-		fmt.Printf("GET %s\n", url)
-	case "HEAD":
-		fmt.Printf("HEAD %s\n", url)
-	case "POST":
-		fmt.Printf("POST %s\n", url)
-	case "PUT":
-		fmt.Printf("PUT %s\n", url)
-	case "DELETE":
-		fmt.Printf("DELETE %s\n", url)
-	case "CONNECT":
-		fmt.Printf("CONNECT %s\n", url)
-	case "OPTIONS":
-		fmt.Printf("OPTIONS %s\n", url)
-	case "TRACE":
-		fmt.Printf("TRACE %s\n", url)
-	case "PATCH":
-		fmt.Printf("PATCH %s\n", url)
+	method := r.Method.Value
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if r.Headers != nil {
+		addHeaders(req, r.Headers)
+	}
+	if r.QsParams != nil {
+		addQueryParams(req, r.QsParams.Params)
+	}
+
+	fmt.Printf("%s %s\n", method, url)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func addHeaders(req *http.Request, headers *ast.Headers) {
+	for _, h := range headers.Headers {
+		req.Header.Add(h.Key.Value, h.Value.Value)
 	}
 }
 
+func addQueryParams(req *http.Request, params []*ast.KeyValue) {
+	q := req.URL.Query()
+	for _, p := range params {
+		q.Add(p.Key.Value, p.Value.Value)
+	}
+	req.URL.RawQuery = q.Encode()
+}
+
+func checkResponse(r *ast.Response, resp *http.Response) {
+	if resp.StatusCode != r.Status.Value.Value {
+		log.Print(fmt.Sprintf("Assert status failed expected: %d actual: %d", r.Status.Value.Value, resp.StatusCode))
+	}
+}
