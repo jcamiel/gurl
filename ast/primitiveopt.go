@@ -8,7 +8,7 @@ func (p *Parser) tryParseString(s string) bool {
 	runes := []rune(s)
 	next, err := p.readRunes(len(runes))
 	if err != nil || !equal(runes, next) {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return false
 	}
 	return true
@@ -22,7 +22,7 @@ func (p *Parser) tryParseWhitespaces() *Whitespaces {
 
 	node := p.parseWhitespaces()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -36,7 +36,7 @@ func (p *Parser) tryParseSpaces() *Spaces {
 
 	node := p.parseSpaces()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -50,7 +50,7 @@ func (p *Parser) tryParseComment() *Comment {
 
 	node := p.parseComment()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -64,7 +64,7 @@ func (p *Parser) tryParseCommentLine() *CommentLine {
 
 	node := p.parseCommentLine()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -78,7 +78,7 @@ func (p *Parser) tryParseComments() *Comments {
 
 	node := p.parseComments()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -92,7 +92,7 @@ func (p *Parser) tryParseKeyString() *KeyString {
 
 	node := p.parseKeyString()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -106,7 +106,7 @@ func (p *Parser) tryParseKeyValue() *KeyValue {
 
 	node := p.parseKeyValue()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -120,7 +120,7 @@ func (p *Parser) tryParseValueString() *ValueString {
 
 	node := p.parseValueString()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -134,7 +134,7 @@ func (p *Parser) tryParseJson() (value Json, text string) {
 
 	value, text = p.parseJson()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil, ""
 	}
 	return
@@ -148,7 +148,7 @@ func (p *Parser) tryParseXml() string {
 
 	text := p.parseXml()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return ""
 	}
 	return text
@@ -162,7 +162,7 @@ func (p *Parser) tryParseBase64() (value []byte, text string) {
 
 	value, text = p.parseBase64()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil, ""
 	}
 	return
@@ -176,7 +176,7 @@ func (p *Parser) tryParseQueryString() *QueryString {
 
 	node := p.parseQueryString()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -190,7 +190,7 @@ func (p *Parser) tryParseInteger() *Integer {
 
 	node := p.parseInteger()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -204,7 +204,7 @@ func (p *Parser) tryParseFloat() *Float {
 
 	node := p.parseFloat()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -218,7 +218,7 @@ func (p *Parser) tryParseBool() *Bool {
 
 	node := p.parseBool()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node

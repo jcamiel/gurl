@@ -8,7 +8,7 @@ func (p *Parser) tryParseHeaders() *Headers {
 
 	node := p.parseHeaders()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -22,7 +22,7 @@ func (p *Parser) tryParseCookies() *Cookies {
 
 	node := p.parseCookies()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -36,7 +36,7 @@ func (p *Parser) tryParseCookie() *Cookie {
 
 	node := p.parseCookie()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -50,7 +50,7 @@ func (p *Parser) tryParseQsParams() *QsParams {
 
 	node := p.parseQsParams()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -64,7 +64,7 @@ func (p *Parser) tryParseFormParams() *FormParams {
 
 	node := p.parseFormParams()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -78,7 +78,7 @@ func (p *Parser) tryParseBody() *Body {
 
 	node := p.parseBody()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -92,7 +92,7 @@ func (p *Parser) tryParseResponse() *Response {
 
 	node := p.parseResponse()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -106,7 +106,7 @@ func (p *Parser) tryParseCapture() *Capture {
 
 	node := p.parseCapture()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -120,7 +120,7 @@ func (p *Parser) tryParseCaptures() *Captures {
 
 	node := p.parseCaptures()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -134,7 +134,7 @@ func (p *Parser) tryParseAssert() *Assert {
 
 	node := p.parseAssert()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -149,7 +149,7 @@ func (p *Parser) tryParseAsserts() *Asserts {
 
 	node := p.parseAsserts()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -163,7 +163,7 @@ func (p *Parser) tryParseNEntry() []*Entry {
 
 	node := p.parseNEntry()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node
@@ -177,7 +177,7 @@ func (p *Parser) tryParseEntry() *Entry {
 
 	node := p.parseEntry()
 	if p.err != nil {
-		p.pos, p.err = pos, nil
+		p.rewindTo(pos)
 		return nil
 	}
 	return node

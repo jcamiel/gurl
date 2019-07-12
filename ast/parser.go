@@ -11,6 +11,7 @@ type Parser struct {
 	buffer   []rune // file content
 	pos      Position
 	err      error
+	errs     []error
 }
 
 type SyntaxError struct {
@@ -28,12 +29,7 @@ func NewParserFromFile(path string) (*Parser, error) {
 
 func NewParserFromString(text string, filename string) *Parser {
 	runes := []rune(text)
-	return &Parser{
-		filename,
-		runes,
-		Position{0, 1, 1},
-		nil,
-	}
+	return &Parser{filename: filename, buffer: runes, pos: Position{0, 1, 1}}
 }
 
 func (p *Parser) Parse() *HurlFile {
@@ -42,6 +38,10 @@ func (p *Parser) Parse() *HurlFile {
 
 func (p *Parser) Err() error {
 	return p.err
+}
+
+func (p *Parser) Errs() []error {
+	return p.errs
 }
 
 func (p *Parser) readRune() (rune, error) {
@@ -126,4 +126,12 @@ func (p *Parser) newSyntaxError(text string) error {
 
 func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("[%d:%d] %s", e.Pos.Line, e.Pos.Column, e.Msg)
+}
+
+func (p *Parser) rewindTo(pos Position) {
+	if p.err != nil {
+		p.errs = append(p.errs, p.err)
+		p.err = nil
+	}
+	p.pos = pos
 }

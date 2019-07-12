@@ -144,7 +144,8 @@ func (p *Parser) parseJsonString() *JsonString {
 	text := string(rs)
 	bs := []byte(text)
 	err = json.Unmarshal(bs, &value)
-	if p.err = err; err != nil {
+	if err != nil {
+		p.err = p.newSyntaxError("invalid json-string")
 		return nil
 	}
 	return &JsonString{Node{pos, p.pos}, text, value}
@@ -157,7 +158,7 @@ func (p *Parser) parseKeyString() *KeyString {
 	pos := p.pos
 
 	key, err := p.readRunesWhile(func(r rune) bool {
-		return !isWhitespace(r) && r != ':' && r != '"' && r != '#'
+		return isAsciiLetter(r) || isDigit(r) || r == '-' || r == '_'
 	})
 	if err != nil || len(key) == 0 {
 		p.err = p.newSyntaxError("char is expected in key-string")
@@ -329,7 +330,8 @@ func (p *Parser) parseJson() (value Json, text string) {
 	reader := bytes.NewReader(bs)
 	dec := json.NewDecoder(reader)
 	err := dec.Decode(&value)
-	if p.err = err; err != nil {
+	if err != nil {
+		p.err = p.newSyntaxError("invalid json")
 		return nil, ""
 	}
 
@@ -367,7 +369,8 @@ func (p *Parser) parseXml() string {
 	reader := bytes.NewReader(bs)
 	dec := xml.NewDecoder(reader)
 	err = dec.Decode(&value)
-	if p.err = err; err != nil {
+	if err != nil {
+		p.err = p.newSyntaxError("invalid xml")
 		return ""
 	}
 

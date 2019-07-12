@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gurl/ast"
 	"gurl/print"
-	"gurl/run"
 	"log"
 	"os"
 )
@@ -19,19 +18,16 @@ func main() {
 	}
 	flag.Parse()
 
-	l := log.New(os.Stderr, "", 0)
-
 	for _, file := range flag.Args() {
 
 		parser, err := ast.NewParserFromFile(file)
 		if err != nil {
-			l.Println(err)
-			os.Exit(1)
+			printErr(err, parser)
 		}
 
 		hurl := parser.Parse()
 		if err := parser.Err(); err != nil {
-			l.Println(err)
+			printErr(err, parser)
 			os.Exit(1)
 		}
 
@@ -40,7 +36,20 @@ func main() {
 		//printer := print.NewHTMLPrinter()
 		fmt.Print(printer.Print(hurl))
 
-		runner := run.NewHttpRunner()
-		runner.Run(hurl)
+		//runner := run.NewHttpRunner()
+		//runner.Run(hurl)
+	}
+}
+
+func printErr(error error, p *ast.Parser) {
+	l := log.New(os.Stderr, "", 0)
+	switch err := error.(type) {
+	/*case *ast.SyntaxError:
+		l.Println(err)
+		for _, e := range p.Errs() {
+			l.Println(e)
+		}*/
+	default:
+		l.Println(err)
 	}
 }
