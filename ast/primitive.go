@@ -158,7 +158,7 @@ func (p *Parser) parseKeyString() *KeyString {
 	pos := p.pos
 
 	key, err := p.readRunesWhile(func(r rune) bool {
-		return isAsciiLetter(r) || isDigit(r) || r == '-' || r == '_'
+		return isAsciiLetter(r) || isDigit(r) || r == '-' || r == '_' || r == '.'
 	})
 	if err != nil || len(key) == 0 {
 		p.err = p.newSyntaxError("char is expected in key-string")

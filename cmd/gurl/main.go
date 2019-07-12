@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gurl/ast"
 	"gurl/print"
+	"gurl/run"
 	"log"
 	"os"
 )
@@ -36,8 +37,8 @@ func main() {
 		//printer := print.NewHTMLPrinter()
 		fmt.Print(printer.Print(hurl))
 
-		//runner := run.NewHttpRunner()
-		//runner.Run(hurl)
+		runner := run.NewHttpRunner()
+		_ = runner.Run(hurl)
 	}
 }
 

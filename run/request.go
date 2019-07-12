@@ -1,32 +1,63 @@
 package run
 
 import (
+	"bytes"
 	"fmt"
 	"gurl/ast"
 	"gurl/template"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 )
 
 func (h *HttpRunner) doRequest(client *http.Client, r *ast.Request) (*http.Response, error) {
 
-	url, err := template.Render(r.Url.Value, h.variables)
+	u, err := template.Render(r.Url.Value, h.variables)
 	if err != nil {
 		return nil, err
 	}
 
 	method := r.Method.Value
-	req, err := http.NewRequest(method, url, nil)
+	var body []byte
+
+	// Construct body from FormParams if any
+	if r.FormParams != nil {
+		body, err = h.bodyFromForm(r.FormParams.Params)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// TODO: traiter form vs body
+
+	req, err := http.NewRequest(method, u, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
 	if r.Headers != nil {
-		addHeaders(req, r.Headers)
+		err := h.addHeaders(req, r.Headers)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if r.QsParams != nil {
-		addQueryParams(req, r.QsParams.Params)
+		err := h.addQueryParams(req, r.QsParams.Params)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if r.FormParams != nil {
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	}
 
-	fmt.Printf("%s %s\n", method, url)
+	// Save a copy of this request for debugging.
+	fmt.Println("------------------")
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(requestDump))
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -34,16 +65,50 @@ func (h *HttpRunner) doRequest(client *http.Client, r *ast.Request) (*http.Respo
 	return resp, nil
 }
 
-func addHeaders(req *http.Request, headers *ast.Headers) {
-	for _, h := range headers.Headers {
-		req.Header.Add(h.Key.Value, h.Value.Value)
+func (h *HttpRunner) addHeaders(req *http.Request, headers *ast.Headers) error {
+	for _, hd := range headers.Headers {
+		name, err := template.Render(hd.Key.Value, h.variables)
+		if err != nil {
+			return err
+		}
+		value, err := template.Render(hd.Value.Value, h.variables)
+		if err != nil {
+			return err
+		}
+		req.Header.Add(name, value)
 	}
+	return nil
 }
 
-func addQueryParams(req *http.Request, params []*ast.KeyValue) {
+func (h *HttpRunner) addQueryParams(req *http.Request, params []*ast.KeyValue) error {
 	q := req.URL.Query()
 	for _, p := range params {
-		q.Add(p.Key.Value, p.Value.Value)
+		name, err := template.Render(p.Key.Value, h.variables)
+		if err != nil {
+			return err
+		}
+		value, err := template.Render(p.Value.Value, h.variables)
+		if err != nil {
+			return err
+		}
+		q.Add(name, value)
 	}
 	req.URL.RawQuery = q.Encode()
+	return nil
+}
+
+func (h *HttpRunner) bodyFromForm(params []*ast.KeyValue) ([]byte, error) {
+	form := url.Values{}
+	for _, p := range params {
+		name, err := template.Render(p.Key.Value, h.variables)
+		if err != nil {
+			return nil, err
+		}
+		value, err := template.Render(p.Value.Value, h.variables)
+		if err != nil {
+			return nil, err
+		}
+		form.Add(name, value)
+	}
+	return []byte(form.Encode()), nil
 }

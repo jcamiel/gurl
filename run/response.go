@@ -1,11 +1,11 @@
 package run
 
 import (
+	"errors"
 	"fmt"
-	"github.com/antchfx/htmlquery"
-	"github.com/antchfx/xpath"
-	"golang.org/x/net/html"
 	"gurl/ast"
+	"gurl/query"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -18,24 +18,34 @@ func isStatusCodeValid(r *ast.Response, resp *http.Response) bool {
 	return true
 }
 
-func captureVariables(captures *ast.Captures, resp *http.Response) {
+func captureVariables(captures *ast.Captures, resp *http.Response) (map[string]string, error) {
+	vars := map[string]string{}
+
 	for _, c := range captures.Captures {
-		_ = c.Key.Value
-		_, _ = evaluateQuery(c.Query, resp)
+		name := c.Key.Value
+		val, err := evaluateQuery(c.Query, resp)
+		if err != nil {
+			return nil, err
+		}
+		switch v := val.(type) {
+		case string:
+			vars[name] = v
+		default:
+			return nil, errors.New("unsupported ")
+		}
 	}
+	return vars, nil
 }
 
-func evaluateQuery(q *ast.Query, resp *http.Response) (string, error) {
-	if q.Type.Value == "xpath" {
-		expr, err := xpath.Compile(q.Expr.Value)
+func evaluateQuery(qry *ast.Query, resp *http.Response) (interface{}, error) {
+	switch qry.Type.Value {
+	case "xpath":
+		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return "", nil
+			return nil, err
 		}
-		node, _ := html.Parse(resp.Body)
-		root := htmlquery.FindOne(node, "//html")
-		nav := htmlquery.CreateXPathNavigator(root)
-		v := expr.Evaluate(nav)
-		fmt.Println(v)
+		return query.EvalXPathHTML(qry.Expr.Value, body)
+	default:
+		return nil, errors.New("unsupported query type")
 	}
-	return "", nil
 }
