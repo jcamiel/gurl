@@ -201,18 +201,26 @@ func TestParseKey(t *testing.T) {
 }
 
 func TestParseKeyValue(t *testing.T) {
-	var text string
-	var node *KeyValue
-	var p *Parser
-
-	/*	text = `# Some comments on header
-		ABCEDF : "uyfgze fuzy uyezfgezuy " # some comment on eol
-	`*/
-	text = "X-WASSUP-ULV: 0x400007b220d105f228acb76e   # identifiant Wassup oidval"
-	p = NewParserFromString(text, "")
-	node = p.parseKeyValue()
-	assert.NotNil(t, node)
-	assert.Nil(t, p.Err())
+	var tests = []struct {
+		text          string
+		expectedKey   string
+		expectedValue string
+	}{
+		{text: `key: 0xabcdef`, expectedKey: "key", expectedValue: "0xabcdef"},
+		{text: `fruit: apple # Some comment`, expectedKey: "fruit", expectedValue: "apple"},
+		{text: `fruit: "some banana" # Some comment`, expectedKey: "fruit", expectedValue: "some banana"},
+		{text: `id: ""`, expectedKey: "id", expectedValue: ""},
+	}
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p := NewParserFromString(test.text, "")
+			node := p.parseKeyValue()
+			assert.NotNil(t, node)
+			assert.Nil(t, p.Err())
+			assert.Equal(t, node.Key.Value, test.expectedKey)
+			assert.Equal(t, node.Value.Value, test.expectedValue)
+		})
+	}
 }
 
 func TestParseValueString(t *testing.T) {
@@ -228,6 +236,7 @@ func TestParseValueString(t *testing.T) {
 		{text: `abcdef#0123456`, expectedValue: "abcdef"},
 		{text: `abcdef    #0123456`, expectedValue: "abcdef"},
 		{text: `012 345 678   `, expectedValue: "012 345 678"},
+		{text: `"some value"`, error: true},
 	}
 
 	for _, test := range tests {
@@ -306,7 +315,7 @@ func TestXml(t *testing.T) {
       with XML.</description>
    </book>
 </catalog>-----`},
-		{text:`abcdef12345678<catalog>
+		{text: `abcdef12345678<catalog>
    <book id="bk101">
       <author>Gambardella, Matthew</author>
       <title>XML Developer's Guide</title>
@@ -316,7 +325,7 @@ func TestXml(t *testing.T) {
       <description>An in-depth look at creating applications 
       with XML.</description>
    </book>
-</catalog>-----`, error:true},
+</catalog>-----`, error: true},
 	}
 
 	for _, test := range tests {
@@ -417,8 +426,8 @@ func TestParseNatural(t *testing.T) {
 		{query: "12345678", expectedValue: 12345678, expectedText: "12345678"},
 		{query: "-123xxx", expectedValue: -123, expectedText: "-123"},
 		{query: "+00046", expectedValue: 46, expectedText: "+00046"},
-		{query: "+-12", error:true},
-		{query: "abcdef", error:true},
+		{query: "+-12", error: true},
+		{query: "abcdef", error: true},
 	}
 	for _, test := range tests {
 		t.Run(test.query, func(t *testing.T) {

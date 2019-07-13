@@ -284,6 +284,15 @@ func (p *Parser) parseValueString() *ValueString {
 	}
 	pos := p.pos
 
+	r, err := p.nextRune()
+	if p.err = err; err != nil {
+		return nil
+	}
+	if r == '"' {
+		p.err = p.newSyntaxError("'\"' is not allowed at value-string beginning")
+		return nil
+	}
+
 	value := make([]rune, 0)
 	for {
 		v, err := p.readRunesWhile(func(r rune) bool {

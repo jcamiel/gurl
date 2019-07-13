@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"gurl/ast"
-	"gurl/print"
 	"gurl/run"
 	"log"
 	"os"
@@ -32,10 +31,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		printer := print.NewTermPrinter()
+		//printer := print.NewTermPrinter()
 		//printer := print.NewJSONPrinter()
 		//printer := print.NewHTMLPrinter()
-		fmt.Print(printer.Print(hurl))
+		//fmt.Print(printer.Print(hurl))
 
 		runner := run.NewHttpRunner()
 		_ = runner.Run(hurl)
