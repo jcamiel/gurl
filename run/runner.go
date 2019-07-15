@@ -1,6 +1,7 @@
 package run
 
 import (
+	"fmt"
 	"gurl/ast"
 	"net/http"
 	"net/http/cookiejar"
@@ -8,6 +9,19 @@ import (
 
 type HttpRunner struct {
 	variables map[string]string
+}
+
+type AssertResult struct {
+	ok  bool
+	msg string
+}
+
+func (a *AssertResult) String() string {
+	if a.ok {
+		return "success"
+	} else {
+		return fmt.Sprintf("failed, %s", a.msg)
+	}
 }
 
 func NewHttpRunner() *HttpRunner {
@@ -41,6 +55,7 @@ func (h *HttpRunner) Run(hurl *ast.HurlFile) error {
 }
 
 func (h *HttpRunner) processEntry(client *http.Client, e *ast.Entry) error {
+
 	resp, err := h.doRequest(client, e.Request)
 	if err != nil {
 		return err
@@ -48,13 +63,9 @@ func (h *HttpRunner) processEntry(client *http.Client, e *ast.Entry) error {
 	defer resp.Body.Close()
 
 	if e.Response != nil {
-		_ = isStatusCodeValid(e.Response, resp)
-		if e.Response.Captures != nil {
-			v, err := captureVariables(e.Response.Captures, resp)
-			if err != nil {
-				return err
-			}
-			h.variables = concatenateMaps(h.variables, v)
+		err := h.checkResponse(e.Response, resp)
+		if err != nil {
+			return nil
 		}
 	}
 	return nil

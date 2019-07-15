@@ -532,9 +532,13 @@ func (p *Parser) parsePredicate() *Predicate {
 		if b = p.tryParseBool(); b != nil {
 			break
 		}
-		t = p.parseJsonString()
+		if t = p.parseJsonString(); t != nil {
+			break
+		}
 	case "matches", "startsWith", "contains":
-		t = p.parseJsonString()
+		if t = p.parseJsonString(); t != nil {
+			break
+		}
 	}
 
 	if p.err != nil {
