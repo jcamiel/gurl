@@ -3,7 +3,7 @@
 ## Build
 
 ```bash
-go build -o gurl cmd/gurl/main.go
+go build -o build/gurl cmd/gurl/main.go
 ```
 
 ## Test 
@@ -12,12 +12,23 @@ go build -o gurl cmd/gurl/main.go
 go test ./...
 ```
 
-## Count cloc
+## Misc
 
 ```bash
-cloc --not-match-f '_test\.go$' .
-```
+# Build:
+tools/build.sh
 
+# Unit tests:
+tools/test.sh
+
+# Unit test and coverage report:
+tools/coverage.sh
+
+# Line count:
+tools/cloc.sh
+# Only Go:
+tools/cloc.sh | grep Go | tr -s ' ' | cut -d ' ' -f 5
+```
 
 # Usage
 
