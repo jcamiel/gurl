@@ -8,10 +8,20 @@ import (
 
 type TermPrinter struct {
 	text string
+	whitespacesFunc func(string) string
 }
 
-func NewTermPrinter() *TermPrinter {
-	f := TermPrinter{}
+func NewTermPrinter(showWhitespaces bool) *TermPrinter {
+	var whitespacesFunc func(string) string
+	if showWhitespaces {
+		whitespacesFunc = visualizeWhitespaces
+	} else {
+		whitespacesFunc = func (s string) string {
+			return s
+		}
+	}
+
+	f := TermPrinter{"", whitespacesFunc}
 	return &f
 }
 
@@ -24,16 +34,16 @@ func (p *TermPrinter) Print(hurlFile *ast.HurlFile) string {
 func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.Body:
-		p.text += visualizeWhitespaces(n.Text)
+		p.text += p.whitespacesFunc(n.Text)
 		return nil
 	case *ast.Eol:
-		p.text += visualizeWhitespaces(n.Value)
+		p.text += p.whitespacesFunc(n.Value)
 		return nil
 	case *ast.Whitespaces:
-		p.text += visualizeWhitespaces(n.Value)
+		p.text += p.whitespacesFunc(n.Value)
 		return nil
 	case *ast.Spaces:
-		p.text += visualizeWhitespaces(n.Value)
+		p.text += p.whitespacesFunc(n.Value)
 		return nil
 	case *ast.Comment:
 		p.text += aurora.Gray(13, n.Value).String()
