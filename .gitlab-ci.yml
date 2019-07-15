@@ -1,0 +1,5 @@
+build:
+- go build -o gurl cmd/gurl/main.go
+
+test:
+- go test ./...
