@@ -31,16 +31,16 @@ func stringVal(p *ast.Predicate) (string, error) {
 
 func val(p *ast.Predicate) interface{} {
 	if v := p.Integer; v != nil {
-		return v
+		return v.Value
 	}
 	if v := p.Float; v != nil {
-		return v
+		return v.Value
 	}
 	if v := p.Bool; v != nil {
-		return v
+		return v.Value
 	}
 	if v := p.String; v != nil {
-		return v
+		return v.Value
 	}
 	return nil
 }
