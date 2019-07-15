@@ -1,3 +1,5 @@
+image: golang:1.12-alpine
+
 build:
   script:
     - go build -o gurl cmd/gurl/main.go
