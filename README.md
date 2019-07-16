@@ -30,6 +30,8 @@ tools/cloc.sh
 tools/cloc.sh | grep Go | tr -s ' ' | cut -d ' ' -f 5
 ```
 
+<https://jeanchristophamiel.pages.gitlab.si.francetelecom.fr/coverage.html>
+
 # Usage
 
 ## Basic

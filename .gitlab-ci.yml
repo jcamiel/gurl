@@ -2,8 +2,24 @@ image: golang:1.12
 
 build:
   script:
-    - go build -o gurl cmd/gurl/main.go
+    - tools/buid.sh
+  artifacts:
+    paths:
+      - build/gurl
 
 test:
   script:
-    - go test ./...
+    - tools/coverage.sh
+  artifacts:
+    paths:
+      - build/coverage.html
+
+pages:
+  dependencies:
+    - test
+  script:
+    - mkdir -p public
+    - cp tools/coverage.html public/
+  artifacts:
+    paths:
+      - public
