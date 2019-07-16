@@ -1,6 +1,12 @@
 image: golang:1.12
 
+stages:
+  - build
+  - test
+  - deploy
+
 build:
+  stage: build
   script:
     - tools/build-all.sh
   artifacts:
@@ -10,6 +16,7 @@ build:
       - build/bin/windows/amd64/gurl.exe
 
 test:
+  stage: test
   script:
     - tools/coverage.sh
   artifacts:
@@ -17,6 +24,7 @@ test:
       - build/coverage.html
 
 pages:
+  stage: deploy
   dependencies:
     - test
   script:
