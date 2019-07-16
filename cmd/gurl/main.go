@@ -65,7 +65,11 @@ func main() {
 		}
 
 		runner := run.NewHttpRunner()
-		_ = runner.Run(hurl)
+		err = runner.Run(hurl)
+		if err != nil {
+			printErr(err, parser)
+			os.Exit(1)
+		}
 	}
 }
 
