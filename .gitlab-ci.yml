@@ -2,10 +2,12 @@ image: golang:1.12
 
 build:
   script:
-    - tools/buid.sh
+    - tools/build-all.sh
   artifacts:
     paths:
-      - build/gurl
+      - build/bin/darwin/amd64/gurl
+      - build/bin/linux/amd64/gurl
+      - build/bin/windows/amd64/gurl.exe
 
 test:
   script:
