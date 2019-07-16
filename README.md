@@ -47,13 +47,13 @@ tools/cloc.sh | grep Go | tr -s ' ' | cut -d ' ' -f 5
 ./gurl -p html ~/Documents/Dev/reunion/integration/hurl/generated/jdd-26-rue-des-bancouliers.hurl > /tmp/x.html && open -a "Safari" /tmp/x.html
 
 # Terminal with syntax coloring (whitespaces not visible)
-./gurl -p term
+./gurl -p term snippet.hurl
 
 # Terminal with syntax coloring (whitespaces visible)
-./gurl -p termws
+./gurl -p termws snippet.hurl
 
 # Hurl ast exported to json
-./gurl -p json | jq
+./gurl -p json snippet.hurl | jq
 ```
 
 # Dev links
