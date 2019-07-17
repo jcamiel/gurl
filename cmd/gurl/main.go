@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gurl/ast"
 	"gurl/print"
+	"gurl/query"
 	"gurl/run"
 	"log"
 	"os"
@@ -31,6 +32,8 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	query.EvalXPathXMLC()
 
 	for _, file := range flag.Args() {
 
