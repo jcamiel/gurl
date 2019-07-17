@@ -1,3 +1,6 @@
+<img src="logo.png">
+
+
 # Development
 
 ## Build
