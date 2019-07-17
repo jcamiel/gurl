@@ -1,4 +1,4 @@
-<img src="logo.png">
+![Gurl](docs/logo-readme.png)
 
 
 # Development
