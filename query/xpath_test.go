@@ -1,9 +1,13 @@
 package query
 
 import (
+	"bufio"
+	"encoding/json"
 	"github.com/antchfx/htmlquery"
 	"github.com/antchfx/xpath"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -109,3 +113,54 @@ func TestEvalXPathHTMLBug2(t *testing.T) {
 	// v = 2, expected v = 1
 	assert.Equal(t, 1.0, v)
 }*/
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func TestEvalXPathAll(t *testing.T) {
+
+	fhtlml, _ := os.Open("testdata/sample1.html")
+	defer fhtlml.Close()
+	doc, _ := htmlquery.Parse(bufio.NewReader(fhtlml))
+	nav := htmlquery.CreateXPathNavigator(doc)
+
+	fcsv, _ := os.Open("testdata/sample1.csv")
+	defer fcsv.Close()
+
+	s := bufio.NewScanner(fcsv)
+	for s.Scan() {
+		col := strings.Split(s.Text(), "|")
+		test := strings.TrimSpace(col[0])
+		expected := strings.TrimSpace(col[1])
+		expr, err := xpath.Compile(test)
+		check(err)
+		actual := expr.Evaluate(nav)
+
+		if expected == "true" {
+			v, ok := actual.(bool)
+			assert.True(t, ok, test)
+			assert.True(t, v, test)
+		} else if expected == "false" {
+			v, ok := actual.(bool)
+			assert.True(t, ok, test)
+			assert.False(t, v, test)
+		} else if strings.HasPrefix(expected, "\"") {
+			v, ok := actual.(string)
+			assert.True(t, ok, test)
+			var exp string
+			err := json.Unmarshal([]byte(expected), &exp)
+			check(err)
+			assert.Equal(t, exp, v, test)
+		} else {
+			v, ok := actual.(float64)
+			assert.True(t, ok, test)
+			exp, err := strconv.ParseFloat(expected, 64)
+			check(err)
+			assert.Equal(t, exp, v, test)
+		}
+	}
+	check(s.Err())
+}

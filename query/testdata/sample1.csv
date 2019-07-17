@@ -1,0 +1,20 @@
+normalize-space(//head/title)                                                                                                                                     |"Offres internet Livebox Fibre dès 57,40 \u20ac/mois - Orange Réunion"
+count(//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])                                                                                         |2
+normalize-space((//div[contains(concat(' ',normalize-space(@class),' '),' offer-title ')])[1])                                                                    |"Livebox Magik Fibre 300Mbit/s"
+normalize-space((//div[contains(concat(' ',normalize-space(@class),' '),' offer-price ')])[1])                                                                    |"47 ,40 \u20ac /mois"
+boolean(count((//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])[1]//div[contains(concat(' ',normalize-space(@class),' '),' offer-promo ')]))   |true
+count((//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])[1]//div[contains(concat(' ',normalize-space(@class),' '),' offer-attribute ')])        |4
+boolean(count((//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])[1]//div[contains(concat(' ',normalize-space(@class),' '),' offer-odr ')]))     |true
+normalize-space((//div[contains(concat(' ',normalize-space(@class),' '),' offer-title ')])[2])                                                                    |"Livebox Magik Fibre 1Gbit/s"
+normalize-space((//div[contains(concat(' ',normalize-space(@class),' '),' offer-price ')])[2])                                                                    |"57 ,40 \u20ac /mois"
+boolean(count((//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])[2]//div[contains(concat(' ',normalize-space(@class),' '),' offer-promo ')]))   |true
+count((//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])[2]//div[contains(concat(' ',normalize-space(@class),' '),' offer-attribute ')])        |4
+boolean(count((//div[contains(concat(' ',normalize-space(@class),' '),' offer ')])[2]//div[contains(concat(' ',normalize-space(@class),' '),' offer-odr ')]))     |true
+count(//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])                                                                                |4
+normalize-space((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[1])                                                                 |"Accueil"
+normalize-space((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[2])                                                                 |"Boutique"
+normalize-space((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[3])                                                                 |"Univers Internet"
+normalize-space((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[4])                                                                 |"Offres Fibre"
+string((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[1]/a/@href)                                                                  |"https://reunion.orange.fr/"
+string((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[2]/a/@href)                                                                  |"https://reunion.orange.fr/boutique/"
+string((//li[contains(concat(' ',normalize-space(@class),' '),' breadcrumb-item ')])[3]/a/@href)                                                                  |"https://reunion.orange.fr/boutique/univers-internet/"
