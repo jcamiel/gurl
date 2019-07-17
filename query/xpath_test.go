@@ -6,6 +6,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"github.com/antchfx/xpath"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -120,12 +121,13 @@ func check(e error) {
 	}
 }
 
-func TestEvalXPathAll(t *testing.T) {
+func TestEvalXPathHTMLSuite(t *testing.T) {
 
 	fhtlml, _ := os.Open("testdata/sample1.html")
 	defer fhtlml.Close()
-	doc, _ := htmlquery.Parse(bufio.NewReader(fhtlml))
-	nav := htmlquery.CreateXPathNavigator(doc)
+
+	doc, err := ioutil.ReadAll(fhtlml)
+	check(err)
 
 	fcsv, _ := os.Open("testdata/sample1.csv")
 	defer fcsv.Close()
@@ -135,9 +137,53 @@ func TestEvalXPathAll(t *testing.T) {
 		col := strings.Split(s.Text(), "|")
 		test := strings.TrimSpace(col[0])
 		expected := strings.TrimSpace(col[1])
-		expr, err := xpath.Compile(test)
-		check(err)
-		actual := expr.Evaluate(nav)
+		actual, err := EvalXPathHTML(test, []byte(doc))
+		assert.Nil(t, err, test)
+
+		if expected == "true" {
+			v, ok := actual.(bool)
+			assert.True(t, ok, test)
+			assert.True(t, v, test)
+		} else if expected == "false" {
+			v, ok := actual.(bool)
+			assert.True(t, ok, test)
+			assert.False(t, v, test)
+		} else if strings.HasPrefix(expected, "\"") {
+			v, ok := actual.(string)
+			assert.True(t, ok, test)
+			var exp string
+			err := json.Unmarshal([]byte(expected), &exp)
+			check(err)
+			assert.Equal(t, exp, v, test)
+		} else {
+			v, ok := actual.(float64)
+			assert.True(t, ok, test)
+			exp, err := strconv.ParseFloat(expected, 64)
+			check(err)
+			assert.Equal(t, exp, v, test)
+		}
+	}
+	check(s.Err())
+}
+
+func TestEvalXPathXMLSuite(t *testing.T) {
+
+	fhtlml, _ := os.Open("testdata/sample2.xml")
+	defer fhtlml.Close()
+
+	doc, err := ioutil.ReadAll(fhtlml)
+	check(err)
+
+	fcsv, _ := os.Open("testdata/sample2.csv")
+	defer fcsv.Close()
+
+	s := bufio.NewScanner(fcsv)
+	for s.Scan() {
+		col := strings.Split(s.Text(), "|")
+		test := strings.TrimSpace(col[0])
+		expected := strings.TrimSpace(col[1])
+		actual, err := EvalXPathXML(test, []byte(doc))
+		assert.Nil(t, err, test)
 
 		if expected == "true" {
 			v, ok := actual.(bool)

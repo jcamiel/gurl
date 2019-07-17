@@ -1,0 +1,12 @@
+//cricketer[@type='righty']/name/text()                                         |"Shikhar Dhawan"
+concat(//cricketer[name='Shami']/@type,//cricketer[name='Zaheer Khan']/@type)   |"rightylefty"
+concat(//cricketer[name='Shami']/@type,' Bowler')                               |"righty Bowler"
+//cricketer[contains(name,'MS')]/name/text()                                    |"MS Dhoni"
+//cricketer[starts-with(name,'Za')]/name/text()                                 |"Zaheer Khan"
+substring-before(//cricketer[name='MS Dhoni']/position,'-Keeper')               |"Wicket"
+substring-after(//cricketer[name='MS Dhoni']/position,'Wicket-')                |"Keeper"
+substring(//cricketer[name='MS Dhoni']/position,'1','4')                        |"Wick"
+string-length(//cricketer[name='MS Dhoni']/position)                            |13
+normalize-space(//cricketer[name='Shikhar Dhawan']/role/text())                 |"Batsman"
+translate('Shikhar Dhawan','S','K')                                             |Khikhar Dhawan
+
