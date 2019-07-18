@@ -54,7 +54,6 @@ func (h *HttpRunner) doRequest(client *http.Client, r *ast.Request) (*http.Respo
 	if err != nil {
 		return nil, err
 	}
-	h.dumpRequest(req)
 	return resp, nil
 }
 
