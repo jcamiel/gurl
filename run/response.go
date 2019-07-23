@@ -7,43 +7,41 @@ import (
 	"gurl/ast"
 	"gurl/query"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
-func (h *HttpRunner) checkResponse(r *ast.Response, resp *http.Response) error {
+func (h *HttpRunner) checkResponse(r *ast.Response, resp *http.Response) ([]*AssertResult, error) {
 
-	_ = isStatusCodeValid(r, resp)
-
+	// First capture variables
 	if r.Captures != nil {
 		v, err := captureVariables(r.Captures, resp)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		h.variables = concatenateMaps(h.variables, v)
 	}
-	if r.Asserts != nil {
-		res, err := h.getAssertsResults(r.Asserts.Asserts, resp)
-		if err != nil {
-			return err
-		}
 
-		for _, r := range res {
-			if !r.ok {
-				fmt.Println(r)
-			}
-		}
+	// Test status code (it's the first assert) and the remaining response asserts.
+	var asserts []*AssertResult
+	asserts = append(asserts, isStatusCodeValid(r, resp))
+
+	a, err := h.getAssertsResults(r.Asserts.Asserts, resp)
+	if err != nil {
+		return nil, err
 	}
+	asserts = append(asserts, a...)
 
-	return nil
+	return asserts, nil
 }
 
-func isStatusCodeValid(r *ast.Response, resp *http.Response) bool {
-	if resp.StatusCode != r.Status.Value.Value {
-		log.Print(fmt.Sprintf("Assert status failed expected: %d actual: %d", r.Status.Value.Value, resp.StatusCode))
-		return false
+func isStatusCodeValid(r *ast.Response, resp *http.Response) *AssertResult {
+	ret := resp.StatusCode == r.Status.Value.Value
+	if ret {
+		return &AssertResult{ok:true}
+	} else {
+		msg := fmt.Sprintf("assert status failed expected: %d actual: %d", r.Status.Value.Value, resp.StatusCode)
+		return &AssertResult{ok:false, msg:msg}
 	}
-	return true
 }
 
 func captureVariables(captures *ast.Captures, resp *http.Response) (map[string]string, error) {
@@ -80,7 +78,7 @@ func evaluateQuery(qry *ast.Query, resp *http.Response) (interface{}, error) {
 
 func (h *HttpRunner) getAssertsResults(asserts []*ast.Assert, resp *http.Response) ([]*AssertResult, error) {
 
-	results := []*AssertResult{}
+	var results []*AssertResult
 
 	for _, a := range asserts {
 		actual, err := evaluateQuery(a.Query, resp)
