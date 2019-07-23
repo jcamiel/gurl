@@ -122,9 +122,9 @@ func EvalXPathHTML(expr string, body [] byte) (interface{}, error) {
 	case XPathNumberType:
 		return float64Value(xobj), nil
 	case XPathNodeSetType:
-		return nil, errors.New("XPathNodeSetType not supported")
+		return nil, errors.New("node set not supported")
 	default:
-		return nil, errors.New("unsupported XPath eval result")
+		return nil, errors.New("unsupported xpath eval result")
 	}
 }
 
