@@ -63,10 +63,7 @@ func (h *HttpRunner) processEntry(client *http.Client, e *ast.Entry) error {
 	defer resp.Body.Close()
 
 	if e.Response != nil {
-		err := h.checkResponse(e.Response, resp)
-		if err != nil {
-			return nil
-		}
+		_ = h.checkResponse(e.Response, resp)
 	}
 	return nil
 }

@@ -29,7 +29,9 @@ func (h *HttpRunner) checkResponse(r *ast.Response, resp *http.Response) error {
 		}
 
 		for _, r := range res {
-			fmt.Println(r)
+			if !r.ok {
+				fmt.Println(r)
+			}
 		}
 	}
 
@@ -90,11 +92,11 @@ func (h *HttpRunner) getAssertsResults(asserts []*ast.Assert, resp *http.Respons
 			r := assertEquals(a.Predicate, actual)
 			results = append(results, r)
 		case "matches":
-			return nil, errors.New("unsupported query type")
+			return nil, errors.New("matches query unsupported")
 		case "startsWith":
-			return nil, errors.New("unsupported query type")
+			return nil, errors.New("startsWith query unsupported")
 		case "contains":
-			return nil, errors.New("unsupported query type")
+			return nil, errors.New("contains query unsupported")
 		}
 	}
 	return results, nil
