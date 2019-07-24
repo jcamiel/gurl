@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gurl/ast"
+	"strings"
 )
 
 type AssertResult struct {
@@ -88,7 +89,29 @@ func assertEquals(pred *ast.Predicate, actual interface{}) *AssertResult {
 		ok = false
 	}
 	if !ok {
-		msg = fmt.Sprintf("actual: %v expected: %v", actual, val(pred))
+		msg = fmt.Sprintf("actual: '%v' expected: '%v'", actual, val(pred))
+	}
+
+	return &AssertResult{ok, msg}
+}
+
+func assertContains(pred *ast.Predicate, actual interface{}) *AssertResult {
+	var ok bool
+	var msg string
+
+	switch v := actual.(type) {
+	case string:
+		expected, err := stringVal(pred)
+		if err != nil {
+			ok = false
+		} else {
+			ok = strings.Contains(v, expected)
+		}
+	default:
+		ok = false
+	}
+	if !ok {
+		msg = fmt.Sprintf("actual: '%v' doesn't contains expected: '%v'", actual, val(pred))
 	}
 
 	return &AssertResult{ok, msg}
