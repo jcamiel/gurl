@@ -29,3 +29,9 @@ func EvalJSONPath(expr string, body [] byte) (interface{}, error) {
 		return nil, errors.New("unsupported jsonpath eval result")
 	}
 }
+
+func IsJSON(body [] byte) bool {
+	var data interface{}
+	err := json.Unmarshal(body, &data)
+	return err == nil
+}

@@ -25,11 +25,13 @@ func (h *HttpRunner) checkResponse(r *ast.Response, resp *http.Response) ([]*Ass
 	var asserts []*AssertResult
 	asserts = append(asserts, isStatusCodeValid(r, resp))
 
-	a, err := h.getAssertsResults(r.Asserts.Asserts, resp)
-	if err != nil {
-		return nil, err
+	if r.Asserts != nil {
+		a, err := h.getAssertsResults(r.Asserts.Asserts, resp)
+		if err != nil {
+			return nil, err
+		}
+		asserts = append(asserts, a...)
 	}
-	asserts = append(asserts, a...)
 
 	return asserts, nil
 }
@@ -70,7 +72,18 @@ func evaluateQuery(qry *ast.Query, resp *http.Response) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+		// TODO: depending on the response content type, we should
+		//  evaluate a HTML xpath query, or a XML xpath query.
 		return query.EvalXPathHTML(qry.Expr.Value, body)
+	case "jsonpath":
+		body, err := body(resp)
+		if err != nil {
+			return nil, err
+		}
+		if !query.IsJSON(body) {
+			return nil, errors.New("valid JSON body is expected for jsonpath query")
+		}
+		return query.EvalJSONPath(qry.Expr.Value, body)
 	default:
 		return nil, errors.New("unsupported query type")
 	}
@@ -81,21 +94,23 @@ func (h *HttpRunner) getAssertsResults(asserts []*ast.Assert, resp *http.Respons
 	var results []*AssertResult
 
 	for _, a := range asserts {
+		var r *AssertResult
 		actual, err := evaluateQuery(a.Query, resp)
 		if err != nil {
-			return nil, err
+			r = &AssertResult{msg:fmt.Sprintf("invalid query: %s", err)}
+		} else {
+			switch a.Predicate.Type.Value {
+			case "equals":
+				r = assertEquals(a.Predicate, actual)
+			case "matches":
+				r = &AssertResult{msg:"matches query unsupported"}
+			case "startsWith":
+				r = &AssertResult{msg:"startsWith query unsupported"}
+			case "contains":
+				r = &AssertResult{msg:"contains query unsupported"}
+			}
 		}
-		switch a.Predicate.Type.Value {
-		case "equals":
-			r := assertEquals(a.Predicate, actual)
-			results = append(results, r)
-		case "matches":
-			return nil, errors.New("matches query unsupported")
-		case "startsWith":
-			return nil, errors.New("startsWith query unsupported")
-		case "contains":
-			return nil, errors.New("contains query unsupported")
-		}
+		results = append(results, r)
 	}
 	return results, nil
 }

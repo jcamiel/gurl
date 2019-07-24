@@ -17,11 +17,11 @@ package query
 #include <libxml/xpathInternals.h>
 #include <libxml/HTMLparser.h>
 
-void _nilErrorHandler(void *ctx, const char *msg, ...) {}
+void _nilGenericErrorHandler(void *ctx, const char *msg, ...) {}
 
-void _xmlSilenceParseErrors() {
-	xmlThrDefSetGenericErrorFunc(NULL, _nilErrorHandler);
-	xmlSetGenericErrorFunc(NULL, _nilErrorHandler);
+void _xmlSilentParseErrors() {
+	xmlThrDefSetGenericErrorFunc(NULL, _nilGenericErrorHandler);
+	xmlSetGenericErrorFunc(NULL, _nilGenericErrorHandler);
 }
 */
 import "C"
@@ -83,7 +83,7 @@ func EvalXPathHTML(expr string, body [] byte) (interface{}, error) {
 	C.xmlInitParser()
 	defer C.xmlCleanupParser()
 
-	C._xmlSilenceParseErrors()
+	C._xmlSilentParseErrors()
 
 	exp := stringToXMLChar(expr)
 	defer C.free(unsafe.Pointer(exp))
@@ -104,8 +104,6 @@ func EvalXPathHTML(expr string, body [] byte) (interface{}, error) {
 		return nil, errors.New("context creation failed")
 	}
 	defer C.xmlXPathFreeContext(ctx)
-
-	C.xmlSetGenericErrorFunc(nil, nil)
 
 	// Evaluate xpath expression
 	xobj := C.xmlXPathEvalExpression(exp, ctx)

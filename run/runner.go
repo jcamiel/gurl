@@ -11,19 +11,6 @@ type HttpRunner struct {
 	variables map[string]string
 }
 
-type AssertResult struct {
-	ok  bool
-	msg string
-}
-
-func (a *AssertResult) String() string {
-	if a.ok {
-		return "success"
-	} else {
-		return fmt.Sprintf("failed, %s", a.msg)
-	}
-}
-
 func NewHttpRunner() *HttpRunner {
 	//variables := make(map[string]string)
 	variables := map[string]string{
@@ -68,9 +55,7 @@ func (h *HttpRunner) processEntry(client *http.Client, e *ast.Entry) error {
 			return err
 		}
 		for _, r := range res {
-			if !r.ok {
-				fmt.Println(r)
-			}
+			fmt.Println(r)
 		}
 	}
 	return nil

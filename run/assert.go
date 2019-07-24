@@ -6,6 +6,19 @@ import (
 	"gurl/ast"
 )
 
+type AssertResult struct {
+	ok  bool
+	msg string
+}
+
+func (a *AssertResult) String() string {
+	if a.ok {
+		return "success"
+	} else {
+		return fmt.Sprintf("failed, %s", a.msg)
+	}
+}
+
 func float64Val(p *ast.Predicate) (float64, error) {
 	if p.Float != nil {
 		return p.Float.Value, nil
