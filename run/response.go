@@ -125,9 +125,10 @@ func (h *HttpRunner) getAssertsResults(asserts []*ast.Assert, resp *http.Respons
 		case "equals":
 			r = assertEquals(a.Predicate, h.variables, actual)
 		case "matches":
-			r = &AssertResult{msg: "matches query unsupported"}
+			// TODO: implement predicate matches.
+			r = &AssertResult{msg: "matches predicate unsupported"}
 		case "startsWith":
-			r = &AssertResult{msg: "startsWith query unsupported"}
+			r = assertStartWiths(a.Predicate, h.variables, actual)
 		case "contains":
 			r = assertContains(a.Predicate, h.variables, actual)
 		}

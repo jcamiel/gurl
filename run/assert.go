@@ -127,3 +127,31 @@ func assertContains(pred *ast.Predicate, vars map[string]string, actual interfac
 
 	return &AssertResult{ok, msg}
 }
+
+func assertStartWiths(pred *ast.Predicate, vars map[string]string, actual interface{}) *AssertResult {
+	var ok bool
+	var msg string
+
+	switch a := actual.(type) {
+	case string:
+		// For string value, we should try render any template variable in the expected string.
+		val, err := stringVal(pred)
+		if err != nil {
+			ok = false
+			break
+		}
+		expected, err := template.Render(val, vars)
+		if err != nil {
+			return &AssertResult{false, fmt.Sprintf("undefined variable in %s", val)}
+		}
+		ok = strings.HasPrefix(a, expected)
+	default:
+		ok = false
+	}
+	if !ok {
+		msg = fmt.Sprintf("actual: '%v' doesn't contains expected: '%v'", actual, val(pred))
+	}
+
+	return &AssertResult{ok, msg}
+}
+

@@ -14,7 +14,13 @@ type HttpRunner struct {
 func NewHttpRunner() *HttpRunner {
 	//variables := make(map[string]string)
 	variables := map[string]string{
-		"root_url": "http://localhost:8080",
+		"root_url":                         "http://localhost:8080",
+		"orange_url":                       "https://myshop.orange.localhost:3443",
+		"sosh_url":                         "https://myshop.sosh.localhost:3443",
+		"https":                            "https//auth.orange.localhost:3443/r/Oid_identification",
+		"wishedActivationDate":             "26/07/2019",
+		"wishedActivationDatePlusOneDay":   "27/07/2019",
+		"wishedActivationDatePlusFiveDays": "31/07/2019",
 	}
 	return &HttpRunner{variables}
 }
