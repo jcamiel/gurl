@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gurl/ast"
+	"gurl/template"
 	"strings"
 )
 
@@ -59,7 +60,7 @@ func val(p *ast.Predicate) interface{} {
 	return nil
 }
 
-func assertEquals(pred *ast.Predicate, actual interface{}) *AssertResult {
+func assertEquals(pred *ast.Predicate, vars map[string]string, actual interface{}) *AssertResult {
 	var ok bool
 	var msg string
 
@@ -79,12 +80,17 @@ func assertEquals(pred *ast.Predicate, actual interface{}) *AssertResult {
 			ok = actual == expected
 		}
 	case string:
-		expected, err := stringVal(pred)
+		// For string value, we should try render any template variable in the expected string.
+		val, err := stringVal(pred)
 		if err != nil {
 			ok = false
-		} else {
-			ok = actual == expected
+			break
 		}
+		expected, err := template.Render(val, vars)
+		if err != nil {
+			return &AssertResult{false, fmt.Sprintf("undefined variable in %s", val)}
+		}
+		ok = actual == expected
 	default:
 		ok = false
 	}
@@ -95,18 +101,23 @@ func assertEquals(pred *ast.Predicate, actual interface{}) *AssertResult {
 	return &AssertResult{ok, msg}
 }
 
-func assertContains(pred *ast.Predicate, actual interface{}) *AssertResult {
+func assertContains(pred *ast.Predicate, vars map[string]string, actual interface{}) *AssertResult {
 	var ok bool
 	var msg string
 
-	switch v := actual.(type) {
+	switch a := actual.(type) {
 	case string:
-		expected, err := stringVal(pred)
+		// For string value, we should try render any template variable in the expected string.
+		val, err := stringVal(pred)
 		if err != nil {
 			ok = false
-		} else {
-			ok = strings.Contains(v, expected)
+			break
 		}
+		expected, err := template.Render(val, vars)
+		if err != nil {
+			return &AssertResult{false, fmt.Sprintf("undefined variable in %s", val)}
+		}
+		ok = strings.Contains(a, expected)
 	default:
 		ok = false
 	}

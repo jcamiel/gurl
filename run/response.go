@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gurl/ast"
 	"gurl/query"
-	"gurl/template"
 	"io/ioutil"
 	"net/http"
 )
@@ -122,26 +121,15 @@ func (h *HttpRunner) getAssertsResults(asserts []*ast.Assert, resp *http.Respons
 			continue
 		}
 
-		// For actual value that are of type string, we should try to render any variables.
-		v, ok := actual.(string)
-		if ok {
-			actual, err = template.Render(v, h.variables)
-			if err != nil {
-				r = &AssertResult{msg: fmt.Sprintf("undefined variable: %s", v)}
-				results = append(results, r)
-				continue
-			}
-		}
-
 		switch a.Predicate.Type.Value {
 		case "equals":
-			r = assertEquals(a.Predicate, actual)
+			r = assertEquals(a.Predicate, h.variables, actual)
 		case "matches":
 			r = &AssertResult{msg: "matches query unsupported"}
 		case "startsWith":
 			r = &AssertResult{msg: "startsWith query unsupported"}
 		case "contains":
-			r = assertContains(a.Predicate, actual)
+			r = assertContains(a.Predicate, h.variables, actual)
 		}
 		results = append(results, r)
 	}
