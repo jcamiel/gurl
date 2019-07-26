@@ -1,11 +1,13 @@
 package query
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/../clib/darwin/amd64/include/libxml2
-#cgo LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libxml2.a
-#cgo LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libz.a
-#cgo LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libiconv.a
-#cgo LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/liblzma.a
+#cgo darwin CFLAGS: -I${SRCDIR}/../clib/darwin/amd64/include/libxml2
+#cgo darwin LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libxml2.a
+#cgo darwin LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libz.a
+#cgo darwin LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libiconv.a
+#cgo darwin LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/liblzma.a
+#cgo linux CFLAGS: -I${SRCDIR}/../clib/linux/amd64/include/libxml2
+#cgo linux LDFLAGS: ${SRCDIR}/../clib/linux/amd64/lib/libxml2.a
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -1,0 +1,12 @@
+FROM debian:jessie
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV CC=/usr/bin/clang-3.5
+RUN apt-get update && apt-get install -yq clang-3.5
+RUN apt-get install make
+RUN apt-get install -yq python-dev
+COPY libxml2-2.9.9 /tmp/libxml2-2.9.9
+WORKDIR /tmp/libxml2-2.9.9
+RUN ./configure --prefix=/opt/local
+RUN make
+RUN make install
