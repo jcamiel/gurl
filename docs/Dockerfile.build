@@ -1,0 +1,5 @@
+FROM golang:1.12
+
+COPY . /gurl
+WORKDIR /gurl
+RUN tools/build-all.sh

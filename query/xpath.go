@@ -7,7 +7,8 @@ package query
 #cgo darwin LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/libiconv.a
 #cgo darwin LDFLAGS: ${SRCDIR}/../clib/darwin/amd64/lib/liblzma.a
 #cgo linux CFLAGS: -I${SRCDIR}/../clib/linux/amd64/include/libxml2
-#cgo linux LDFLAGS: ${SRCDIR}/../clib/linux/amd64/lib/libxml2.a
+//#cgo linux LDFLAGS: -L${SRCDIR}/../clib/linux/amd64/lib -lxml2
+#cgo linux LDFLAGS: ${SRCDIR}/../clib/linux/amd64/lib/libxml2.a -lm
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
