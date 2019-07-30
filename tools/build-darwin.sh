@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-go build -ldflags="-s -w" -o out/bin/darwin/amd64/gurl cmd/gurl/main.go
+read -r version < version.txt
+
+go build -ldflags="-s -w -X main.buildVersion=$version -X main.buildCommit=$(git describe --always --long --dirty)" \
+    -o out/bin/darwin/amd64/gurl \
+    cmd/gurl/main.go

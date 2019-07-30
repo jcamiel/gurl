@@ -12,14 +12,23 @@ import (
 )
 
 var printFlag string
+var versionFlag bool
+
+var (
+	buildVersion string = ""
+	buildCommit string = ""
+)
 
 func init() {
 	const (
 		printDefault = ""
 		printUsage = "print mode (term, termws, html, json), do not run file, "
+		versionDefault = false
+		versionUsage = "print current gurl version"
 	)
 	flag.StringVar(&printFlag, "print", printDefault, printUsage)
 	flag.StringVar(&printFlag, "p", printDefault, printUsage)
+	flag.BoolVar(&versionFlag, "version", versionDefault, versionUsage)
 }
 
 
@@ -31,6 +40,11 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	if versionFlag {
+		fmt.Printf("%s (%s)\n", buildVersion, buildCommit)
+		os.Exit(0)
+	}
 
 	for _, file := range flag.Args() {
 
