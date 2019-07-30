@@ -28,8 +28,8 @@ pages:
   dependencies:
     - test
   script:
-    - mkdir -p public
-    - cp out/coverage.html public/
+    - mkdir -p public/coverage
+    - cp out/coverage.html public/coverage/
   artifacts:
     paths:
       - public
