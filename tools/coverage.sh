@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-go test -covermode=count -coverprofile=build/coverage.out ./...
+go test -covermode=count -coverprofile=out/coverage.out ./...
 
-go tool cover -html=build/coverage.out -o build/coverage.html
+go tool cover -html=out/coverage.out -o out/coverage.html
 
-go tool cover -func=build/coverage.out | grep total: | tr -s '\t' | cut -f 3
+go tool cover -func=out/coverage.out | grep total: | tr -s '\t' | cut -f 3
