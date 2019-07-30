@@ -29,7 +29,7 @@ pages:
     - test
   script:
     - mkdir -p public
-    - cp tools/coverage.html public/
+    - cp out/coverage.html public/
   artifacts:
     paths:
       - public
