@@ -8,20 +8,20 @@ stages:
 build:
   stage: build
   script:
+    - env DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -yq install libxml2-dev
     - tools/build-all.sh
   artifacts:
     paths:
-      - build/bin/darwin/amd64/gurl
-      - build/bin/linux/amd64/gurl
-      - build/bin/windows/amd64/gurl.exe
+      - out/bin/linux/amd64/gurl
 
 test:
   stage: test
   script:
+    - env DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -yq install libxml2-dev
     - tools/coverage.sh
   artifacts:
     paths:
-      - build/coverage.html
+      - out/coverage.html
 
 pages:
   stage: deploy

@@ -1,4 +1,0 @@
-libiconv-1.16
-zlib-1.2.11
-xz-5.2.4
-libxml2-2.9.9
