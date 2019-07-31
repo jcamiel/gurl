@@ -56,54 +56,51 @@ User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/6
 	}
 }
 
-func TestParseFailed(t *testing.T) {
-	var text string
-	var p *Parser
-
-	text = "\n\nPOSThttp://google.com"
-	p = NewParserFromString(text, "")
-	_ = p.parseRequest()
-	assert.NotNil(t, p.Err())
-}
-
 func TestParseHurlFile(t *testing.T) {
 	var tests = []struct {
-		text string
+		text  string
+		error bool
 	}{
-/*		{`# Some comments
-# line 1
-# line 2
+		{text: `# Some comments
+		# line 1
+		# line 2
 
-# 
-# Login.
-GET https://sample.org/login
-User-Agent: Some Agent
-[QueryStringParams]
-q: test
+		#
+		# Login.
+		GET https://sample.org/login
+		User-Agent: Some Agent
+		[QueryStringParams]
+		q: test
 
-HTTP/1.1 302
+		HTTP/1.1 302
 
 
-# 
-# Some checks
-GET {{url}}/home
-User-Agent: Some Agent
-HTTP/1.1 302
-[Asserts]
-header Location equals "{{url/account}}"`,
-		},*/
-		{`# Empty hurl file with comment lines 1.
+		#
+		# Some checks
+		GET {{url}}/home
+		User-Agent: Some Agent
+		HTTP/1.1 302
+		[Asserts]
+		header Location equals "{{url/account}}"`},
+		{text: `# Empty hurl file with comment lines 1.
 # Empty hurl file with comment lines 2.
 # Empty hurl file with comment lines 3.
 # Empty hurl file with comment lines 4.`},
+		{text: `Invalid hurl file`, error: true},
+		{text:`POSThttp://google.com`, error: true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.text, func(t *testing.T) {
 			p := NewParserFromString(test.text, "")
 			node := p.parseHurlFile()
-			assert.NotNil(t, node)
-			assert.Nil(t, p.Err())
+			if !test.error {
+				assert.NotNil(t, node)
+				assert.Nil(t, p.Err())
+			} else {
+				assert.Nil(t, node)
+				assert.NotNil(t, p.Err())
+			}
 		})
 	}
 
@@ -124,7 +121,7 @@ key3 : value3`
 	assert.Nil(t, p.Err())
 }
 
-func TestCookies(t *testing.T) {
+func TestParseCookies(t *testing.T) {
 	var text string
 	var node *Cookies
 	var p *Parser
@@ -140,7 +137,7 @@ func TestCookies(t *testing.T) {
 	assert.Nil(t, p.Err())
 }
 
-func TestBody(t *testing.T) {
+func TestParseBody(t *testing.T) {
 	var node *Body
 	var p *Parser
 
@@ -192,4 +189,38 @@ func TestParsePredicate(t *testing.T) {
 			assert.Nil(t, p.Err())
 		})
 	}
+}
+
+func TestParseEntry(t *testing.T) {
+	var text string
+	var node *Entry
+	var p *Parser
+
+	text = `GET http://sample.org
+HTTP/1.1 200	
+`
+	p = NewParserFromString(text, "")
+	node = p.parseEntry()
+	assert.NotNil(t, node)
+	assert.Nil(t, p.Err())
+}
+
+func TestParseNEntry(t *testing.T) {
+	var text string
+	var node []*Entry
+	var p *Parser
+
+	text = `GET http://sample.org
+HTTP/1.1 200
+
+POST http://sample.org
+HTTP/1.1 404
+
+PUT http://sample.org
+HTTP/1.1 500
+`
+	p = NewParserFromString(text, "")
+	node = p.parseNEntry()
+	assert.NotNil(t, node)
+	assert.Nil(t, p.Err())
 }
