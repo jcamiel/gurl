@@ -1,4 +1,4 @@
-package print
+package format
 
 import (
 	"fmt"
@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type HTMLPrinter struct {
+type HTMLFormatter struct {
 	text string
 }
 
-func NewHTMLPrinter() *HTMLPrinter {
-	return &HTMLPrinter{}
+func NewHTMLFormatter() *HTMLFormatter {
+	return &HTMLFormatter{}
 }
 
-func (p *HTMLPrinter) Print(hurlFile *ast.HurlFile) string {
+func (p *HTMLFormatter) Format(hurlFile *ast.HurlFile) string {
 
 	const template = `<!DOCTYPE html>
 <html lang="en">
@@ -37,7 +37,7 @@ func (p *HTMLPrinter) Print(hurlFile *ast.HurlFile) string {
 	return fmt.Sprintf(template, text)
 }
 
-func (p *HTMLPrinter) Visit(node ast.Noder) ast.Visitor {
+func (p *HTMLFormatter) Visit(node ast.Noder) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.Body:
 		p.text += white(n.Text)
@@ -96,7 +96,7 @@ func (p *HTMLPrinter) Visit(node ast.Noder) ast.Visitor {
 		p.text += cyan(n.Value)
 		return nil
 	case *ast.PredicateType:
-		p.text += orange( n.Value)
+		p.text += orange(n.Value)
 		return nil
 	case *ast.Natural:
 		p.text += lightBlue(n.Text)
@@ -113,7 +113,6 @@ func (p *HTMLPrinter) Visit(node ast.Noder) ast.Visitor {
 	}
 	return p
 }
-
 
 func white(text string) string {
 	return span(text, "white")

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"gurl/ast"
-	"gurl/print"
+	"gurl/format"
 	"gurl/run"
 	"log"
 	"os"
@@ -16,21 +16,20 @@ var versionFlag bool
 
 var (
 	buildVersion string = ""
-	buildCommit string = ""
+	buildCommit  string = ""
 )
 
 func init() {
 	const (
-		printDefault = ""
-		printUsage = "print mode (term, termws, html, json), do not run file, "
+		printDefault   = ""
+		printUsage     = "print mode (term, termws, html, json), do not run file, "
 		versionDefault = false
-		versionUsage = "print current gurl version"
+		versionUsage   = "print current gurl version"
 	)
 	flag.StringVar(&printFlag, "print", printDefault, printUsage)
 	flag.StringVar(&printFlag, "p", printDefault, printUsage)
 	flag.BoolVar(&versionFlag, "version", versionDefault, versionUsage)
 }
-
 
 func main() {
 
@@ -48,40 +47,40 @@ func main() {
 
 	for _, file := range flag.Args() {
 
-		parser, err := ast.NewParserFromFile(file)
+		p, err := ast.NewParserFromFile(file)
 		if err != nil {
-			printErr(err, parser)
+			printErr(err, p)
 		}
 
-		hurl := parser.Parse()
-		if err := parser.Err(); err != nil {
-			printErr(err, parser)
+		hurl := p.Parse()
+		if err := p.Err(); err != nil {
+			printErr(err, p)
 			os.Exit(1)
 		}
 
 		if len(printFlag) > 0 {
-			var p print.Printer
+			var f format.Formatter
 			switch printFlag {
 			case "term":
-				p = print.NewTermPrinter(false)
+				f = format.NewTermFormatter(false)
 			case "termws":
-				p = print.NewTermPrinter(true)
+				f = format.NewTermFormatter(true)
 			case "html":
-				p = print.NewHTMLPrinter()
+				f = format.NewHTMLFormatter()
 			case "json":
-				p = print.NewJSONPrinter()
+				f = format.NewJSONFormatter()
 			default:
 				printErr(errors.New(fmt.Sprintf("unsupported print mode '%s'", printFlag)), nil)
 				os.Exit(1)
 			}
-			fmt.Print(p.Print(hurl))
+			fmt.Print(f.Format(hurl))
 			os.Exit(0)
 		}
 
-		runner := run.NewHttpRunner()
-		err = runner.Run(hurl)
+		r := run.NewHttpRunner()
+		err = r.Run(hurl)
 		if err != nil {
-			printErr(err, parser)
+			printErr(err, p)
 			os.Exit(1)
 		}
 	}
@@ -91,10 +90,10 @@ func printErr(error error, p *ast.Parser) {
 	l := log.New(os.Stderr, "", 0)
 	switch err := error.(type) {
 	/*case *ast.SyntaxError:
-		l.Println(err)
-		for _, e := range p.Errs() {
-			l.Println(e)
-		}*/
+	l.Println(err)
+	for _, e := range p.Errs() {
+		l.Println(e)
+	}*/
 	default:
 		l.Println(err)
 	}

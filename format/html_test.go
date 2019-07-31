@@ -1,4 +1,4 @@
-package print
+package format
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -42,7 +42,7 @@ HTTP/1.1 200`
 	assert.NotNil(t, hurl)
 	assert.Nil(t, p.Err())
 
-	f := NewHTMLPrinter()
-	output := f.Print(hurl)
+	f := NewHTMLFormatter()
+	output := f.Format(hurl)
 	assert.Equal(t, expected, output)
 }

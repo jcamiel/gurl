@@ -1,4 +1,4 @@
-package print
+package format
 
 import (
 	"github.com/logrusorgru/aurora"
@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-type TermPrinter struct {
+type TermFormatter struct {
 	text string
 	whitespacesFunc func(string) string
 }
 
-func NewTermPrinter(showWhitespaces bool) *TermPrinter {
+func NewTermFormatter(showWhitespaces bool) *TermFormatter {
 	var whitespacesFunc func(string) string
 	if showWhitespaces {
 		whitespacesFunc = visualizeWhitespaces
@@ -21,17 +21,17 @@ func NewTermPrinter(showWhitespaces bool) *TermPrinter {
 		}
 	}
 
-	f := TermPrinter{"", whitespacesFunc}
+	f := TermFormatter{"", whitespacesFunc}
 	return &f
 }
 
-func (p *TermPrinter) Print(hurlFile *ast.HurlFile) string {
+func (p *TermFormatter) Format(hurlFile *ast.HurlFile) string {
 	p.text = ""
 	ast.Walk(p, hurlFile)
 	return p.text
 }
 
-func (p *TermPrinter) Visit(node ast.Noder) ast.Visitor {
+func (p *TermFormatter) Visit(node ast.Noder) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.Body:
 		p.text += p.whitespacesFunc(n.Text)

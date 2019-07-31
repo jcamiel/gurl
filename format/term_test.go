@@ -1,4 +1,4 @@
-package print
+package format
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -41,7 +41,7 @@ header Location equals "https://sso.orange.fr/espace-client/m/?page=demenagement
 	assert.NotNil(t, hurl)
 	assert.Nil(t, p.Err())
 
-	f := NewTermPrinter(false)
-	output := f.Print(hurl)
+	f := NewTermFormatter(false)
+	output := f.Format(hurl)
 	assert.NotNil(t, output)
 }
