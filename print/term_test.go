@@ -41,7 +41,7 @@ header Location equals "https://sso.orange.fr/espace-client/m/?page=demenagement
 	assert.NotNil(t, hurl)
 	assert.Nil(t, p.Err())
 
-	formatter := NewTermPrinter(false)
-	output := formatter.Print(hurl)
+	f := NewTermPrinter(false)
+	output := f.Print(hurl)
 	assert.NotNil(t, output)
 }

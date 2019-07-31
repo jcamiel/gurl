@@ -180,7 +180,7 @@ func (p *Parser) parseVersion() *Version {
 			return &Version{Node{pos, p.pos}, v}
 		}
 	}
-	p.err = p.newSyntaxError("method is expected")
+	p.err = p.newSyntaxError("version is expected")
 	return nil
 }
 
