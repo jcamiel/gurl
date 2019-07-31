@@ -19,6 +19,7 @@ test:
   script:
     - env DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -yq install libxml2-dev
     - tools/coverage.sh
+  coverage: '/total:\s+\(statements\)\s+(\d+.\d+%)/'
   artifacts:
     paths:
       - out/coverage.html
@@ -29,7 +30,7 @@ pages:
     - test
   script:
     - mkdir -p public/coverage
-    - cp out/coverage.html public/coverage/
+    - cp out/coverage.html public/coverage/index.html
   artifacts:
     paths:
       - public
