@@ -99,22 +99,6 @@ func (p *Parser) nextRune() (rune, error) {
 	return p.buffer[p.pos.Offset], nil
 }
 
-func (p *Parser) nextRunes(count int) ([]rune, error) {
-	end := p.pos.Offset + count
-	if end > len(p.buffer) {
-		return nil, io.EOF
-	}
-	return p.buffer[p.pos.Offset:end], nil
-}
-
-func (p *Parser) nextRunesMax(count int) ([]rune, error) {
-	end := p.pos.Offset + count
-	if end > len(p.buffer) {
-		return p.buffer[p.pos.Offset:], nil
-	}
-	return p.buffer[p.pos.Offset:end], nil
-}
-
 // Number of runes left to parse
 func (p *Parser) left() int {
 	return len(p.buffer) - p.pos.Offset
