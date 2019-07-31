@@ -20,6 +20,9 @@ func Walk(v Visitor, node Noder) {
 		for _, e := range n.Entries {
 			Walk(v, e)
 		}
+		if n.Comments != nil {
+			Walk(v, n.Comments)
+		}
 	case *Entry:
 		Walk(v, n.Request)
 		if n.Whitespaces != nil {

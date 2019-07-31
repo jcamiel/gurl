@@ -67,41 +67,46 @@ func TestParseFailed(t *testing.T) {
 }
 
 func TestParseHurlFile(t *testing.T) {
-	var text string
-	var node *HurlFile
-	var p *Parser
-
-	text = `# GENERATED - DO NOT MODIFY
-# =========================
-# 
-# On teste un parcours de déménagement avec un client Internet Sosh Mobile + Livebox.
-# On vérifie que l'on est bien redirigé vers la page correspondante
-# sur l'espace client mobile.
-# ---------------------------------------
+	var tests = []struct {
+		text string
+	}{
+/*		{`# Some comments
+# line 1
+# line 2
 
 # 
-# Login Sur Wt Proxy.
-GET https://auth.orange.localhost:3443/r/Oid_identification
-User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1
+# Login.
+GET https://sample.org/login
+User-Agent: Some Agent
 [QueryStringParams]
-wassup: Sylvie_Caniou
+q: test
 
 HTTP/1.1 302
 
 
 # 
-# On vérifie que les clients Sosh sont redirigés depuis la page planifier
-# vers l'espace client avec le bon numéro de contrat.
-GET {{orange_url}}/demenagement/planifier
-User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1
-
+# Some checks
+GET {{url}}/home
+User-Agent: Some Agent
 HTTP/1.1 302
 [Asserts]
-header Location equals "https://sso.orange.fr/espace-client/m/?page=demenagement-demande&MCO=SOH&idContrat=9003384900"`
-	p = NewParserFromString(text, "")
-	node = p.parseHurlFile()
-	assert.NotNil(t, node)
-	assert.Nil(t, p.Err())
+header Location equals "{{url/account}}"`,
+		},*/
+		{`# Empty hurl file with comment lines 1.
+# Empty hurl file with comment lines 2.
+# Empty hurl file with comment lines 3.
+# Empty hurl file with comment lines 4.`},
+	}
+
+	for _, test := range tests {
+		t.Run(test.text, func(t *testing.T) {
+			p := NewParserFromString(test.text, "")
+			node := p.parseHurlFile()
+			assert.NotNil(t, node)
+			assert.Nil(t, p.Err())
+		})
+	}
+
 }
 
 func TestParseHeaders(t *testing.T) {
