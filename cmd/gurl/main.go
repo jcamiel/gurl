@@ -1,17 +1,14 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"gurl/ast"
-	"gurl/format"
 	"gurl/run"
 	"log"
 	"os"
 )
 
-var printFlag string
 var versionFlag bool
 
 var (
@@ -21,13 +18,9 @@ var (
 
 func init() {
 	const (
-		printDefault   = ""
-		printUsage     = "print mode (term, termws, html, json), do not run file, "
 		versionDefault = false
 		versionUsage   = "print current gurl version"
 	)
-	flag.StringVar(&printFlag, "print", printDefault, printUsage)
-	flag.StringVar(&printFlag, "p", printDefault, printUsage)
 	flag.BoolVar(&versionFlag, "version", versionDefault, versionUsage)
 }
 
@@ -56,25 +49,6 @@ func main() {
 		if err := p.Err(); err != nil {
 			printErr(err, p)
 			os.Exit(1)
-		}
-
-		if len(printFlag) > 0 {
-			var f format.Formatter
-			switch printFlag {
-			case "term":
-				f = format.NewTermFormatter(false)
-			case "termws":
-				f = format.NewTermFormatter(true)
-			case "html":
-				f = format.NewHTMLFormatter()
-			case "json":
-				f = format.NewJSONFormatter()
-			default:
-				printErr(errors.New(fmt.Sprintf("unsupported print mode '%s'", printFlag)), nil)
-				os.Exit(1)
-			}
-			fmt.Print(f.Format(hurl))
-			os.Exit(0)
 		}
 
 		r := run.NewHttpRunner()

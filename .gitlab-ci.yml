@@ -13,6 +13,7 @@ build:
   artifacts:
     paths:
       - out/bin/linux/amd64/gurl
+      - out/bin/linux/amd64/gurlfmt
 
 test:
   stage: test
