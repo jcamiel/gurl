@@ -6,7 +6,8 @@ go:
 env:
   - GO111MODULE=on
 
-before_script:
-  - env DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -yq install libxml2-dev
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y libxml2-dev
 
 script: tools/build-darwin.sh
