@@ -1,6 +1,5 @@
 ![Gurl](docs/logo-readme.png)
 
-
 # Development
 
 ## Build
