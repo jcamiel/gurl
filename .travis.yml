@@ -1,8 +1,10 @@
 language: go
 
 go:
-- 1.12
+  - 1.12
 
+env:
+  - GO111MODULE=on
 
 before_script:
   - env DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -yq install libxml2-dev
