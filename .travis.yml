@@ -1,0 +1,10 @@
+language: go
+
+go:
+- 1.12
+
+
+before_script:
+  - env DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -yq install libxml2-dev
+
+script: tools/build-darwin.sh

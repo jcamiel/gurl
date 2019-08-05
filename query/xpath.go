@@ -1,8 +1,8 @@
 package query
 
 /*
-#cgo darwin CFLAGS: -I/usr/local/opt/libxml2/include/libxml2
-#cgo darwin LDFLAGS: -L/usr/local/opt/libxml2/lib -lxml2
+#cgo darwin CFLAGS: -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/libxml2
+#cgo darwin LDFLAGS: -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib -lxml2
 #cgo linux CFLAGS: -I/usr/include/libxml2
 #cgo linux LDFLAGS: -lxml2
 #include <stdlib.h>
