@@ -12,7 +12,7 @@ before_install:
 
 script:
   - tools/build-darwin.sh
-  - tools/coverage.sh
+  - go test -covermode=atomic -coverprofile=coverage.txt ./...
 
 
 deploy:

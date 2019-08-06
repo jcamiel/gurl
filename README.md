@@ -1,4 +1,7 @@
+[![Build Status](https://travis-ci.com/jcamiel/gurl.png?branch=master)](https://travis-ci.com/jcamiel/gurl)
+
 ![Gurl](docs/logo-readme.png)
+
 
 # Development
 
