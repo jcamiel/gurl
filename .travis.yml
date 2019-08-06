@@ -11,8 +11,9 @@ before_install:
   - sudo apt-get install -y libxml2-dev
 
 script:
-  - tools/build-darwin.sh
-  - go test -covermode=atomic -coverprofile=coverage.txt ./...
+  - tools/build-linux.sh
+  - tools/coverage.sh
+  - tools/coverage-travis.sh
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
@@ -26,3 +27,5 @@ deploy:
     branch: master
   verbose: true
   local_dir: out/
+  repo: jcamiel/jcamiel.github.io
+  target_branch: master
